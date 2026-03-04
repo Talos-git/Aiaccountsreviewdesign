@@ -102,7 +102,7 @@ export default function AddAiReviewTab() {
       <Container additionalClassNames="h-[61.5px] w-[1341px]">
         <div className="absolute h-[36px] left-[16px] top-[12.25px] w-[508.18px]" data-name="Container">
           <div className="absolute h-[21px] left-[48px] top-[7.5px] w-[460.18px]" data-name="Typography">
-            <p className="absolute font-['Helvetica:Regular',sans-serif] leading-[21px] left-0 not-italic text-[14px] text-black top-[0.5px] tracking-[0.1313px] whitespace-nowrap">Royale Infinite Pte. Ltd.: Review with Accountant for 1 Jan - 31 Dec 2023</p>
+            <p className="absolute font-['Helvetica:Regular',sans-serif] leading-[21px] left-0 not-italic text-[14px] text-black top-[0.5px] tracking-[0.1313px] whitespace-nowrap">Green Trees Pte. Ltd.: Review with Accountant for 1 Jan - 31 Dec 2023</p>
           </div>
           <div className="absolute bg-[#1976d2] content-stretch flex items-center justify-center left-0 rounded-[18px] size-[36px] top-0" data-name="IconButton">
             <div className="relative shrink-0 size-[20px]" data-name="ArrowBackIcon">
