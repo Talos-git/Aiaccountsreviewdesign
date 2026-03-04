@@ -32,7 +32,7 @@ jobs:
         run: |
           npm ci
           # Workaround for intermittent npm optional dependency resolution issues in CI.
-          npm install --no-save @rollup/rollup-linux-x64-gnu
+          npm install --no-save @rollup/rollup-linux-x64-gnu lightningcss-linux-x64-gnu @tailwindcss/oxide-linux-x64-gnu
 
       - name: Extract Jira key
         id: jira
