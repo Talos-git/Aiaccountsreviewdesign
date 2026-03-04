@@ -33,6 +33,8 @@ import {
   KeyboardArrowDown,
 } from '@mui/icons-material';
 
+import { AiReviewTab } from './ai-review/AiReviewTab';
+
 // Checklist data
 const checklistItems = [
   { id: 1, text: 'Functional currency of current year management report is similar to previous year', height: 55 },
@@ -261,21 +263,7 @@ export default function App() {
         );
 
       case 1: // AI Review tab
-        return (
-          <Box
-            sx={{
-              flex: 1,
-              bgcolor: '#fafafa',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Typography variant="body1" color="text.secondary">
-              AI Review - Coming Soon
-            </Typography>
-          </Box>
-        );
+        return <AiReviewTab />;
 
       default:
         return (
