@@ -51,6 +51,75 @@ jobs:
       - name: Build app for Jira route
         run: npm run build -- --base=/${{ steps.jira.outputs.jira_key }}/
 
+      - name: Create root landing page
+        run: |
+          mkdir -p .pages-root
+          cat > .pages-root/index.html <<'HTML'
+          <!doctype html>
+          <html lang="en">
+            <head>
+              <meta charset="UTF-8" />
+              <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+              <title>AI Accounts Review Previews</title>
+              <style>
+                body {
+                  margin: 0;
+                  padding: 2rem;
+                  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+                  background: #f7f7f8;
+                  color: #111827;
+                }
+                main {
+                  max-width: 720px;
+                  margin: 0 auto;
+                  background: #ffffff;
+                  border: 1px solid #e5e7eb;
+                  border-radius: 12px;
+                  padding: 1.5rem;
+                }
+                h1 {
+                  margin-top: 0;
+                  margin-bottom: 0.5rem;
+                  font-size: 1.5rem;
+                }
+                ul {
+                  padding-left: 1.25rem;
+                }
+                li {
+                  margin: 0.5rem 0;
+                }
+                a {
+                  color: #2563eb;
+                  text-decoration: none;
+                }
+                a:hover {
+                  text-decoration: underline;
+                }
+              </style>
+            </head>
+            <body>
+              <main>
+                <h1>AI Accounts Review Preview Routes</h1>
+                <p>Select a Jira preview deployment:</p>
+                <ul>
+                  <li><a href="./MIND-415/">MIND-415</a></li>
+                  <li><a href="./MIND-554/">MIND-554</a></li>
+                  <li><a href="./MIND-555/">MIND-555</a></li>
+                </ul>
+              </main>
+            </body>
+          </html>
+          HTML
+          cp .pages-root/index.html .pages-root/404.html
+
+      - name: Deploy root landing page
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./.pages-root
+          keep_files: true
+
       - name: Deploy route to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:
