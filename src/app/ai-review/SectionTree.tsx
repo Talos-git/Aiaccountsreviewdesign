@@ -1,5 +1,6 @@
 import { Box, Button, Chip, Collapse, IconButton, List, ListItemButton, ListItemText, Stack, Typography } from '@mui/material';
 import { ExpandLess, ExpandMore, UnfoldLess, UnfoldMore } from '@mui/icons-material';
+import { alpha } from '@mui/material/styles';
 
 import type { SectionNode, SelectedSection } from './types';
 
@@ -38,15 +39,38 @@ function renderNode({
         dense
         selected={selectedSectionId === node.id}
         onClick={() => onSelectSection(node.section)}
-        sx={{ pl: 2 + depth * 2 }}
+        sx={(theme) => ({
+          pl: 2 + depth * 2,
+          mx: 1,
+          my: 0.25,
+          borderRadius: 2.5,
+          '&.Mui-selected': {
+            backgroundColor: alpha(theme.palette.primary.main, 0.10),
+          },
+          '&.Mui-selected:hover': {
+            backgroundColor: alpha(theme.palette.primary.main, 0.14),
+          },
+          '&:hover': {
+            backgroundColor: alpha(theme.palette.text.primary, 0.04),
+          },
+        })}
       >
         <ListItemText
           primary={
             <Stack direction="row" spacing={1} alignItems="center">
-              <Typography variant="body2" sx={{ fontSize: 13 }}>
+              <Typography variant="body2" sx={{ fontSize: 13, color: 'text.primary' }}>
                 {node.label}
               </Typography>
-              <Chip size="small" label={node.count} sx={{ height: 20, fontSize: 12 }} />
+              <Chip
+                size="small"
+                label={node.count}
+                variant="outlined"
+                sx={(theme) => ({
+                  height: 22,
+                  fontSize: 12,
+                  backgroundColor: alpha(theme.palette.text.primary, 0.03),
+                })}
+              />
             </Stack>
           }
         />
@@ -97,7 +121,7 @@ export function SectionTree({
 }: SectionTreeProps) {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid #e0e0e0' }}>
+      <Box sx={{ px: 2, py: 1.5, borderBottom: (theme) => `1px solid ${theme.palette.divider}` }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
           <Typography variant="subtitle2" sx={{ fontSize: 13, fontWeight: 700 }}>
             Sections
@@ -116,14 +140,19 @@ export function SectionTree({
           size="small"
           variant="outlined"
           onClick={onClearSelection}
-          sx={{ mt: 1, textTransform: 'none', fontSize: 12, borderColor: '#e0e0e0' }}
+          sx={(theme) => ({
+            mt: 1,
+            fontSize: 12,
+            borderColor: alpha(theme.palette.text.primary, 0.12),
+            backgroundColor: alpha(theme.palette.background.paper, 0.55),
+          })}
           fullWidth
         >
           All findings
         </Button>
       </Box>
 
-      <Box sx={{ flex: 1, overflow: 'auto' }}>
+      <Box sx={{ flex: 1, overflow: 'auto', py: 1 }}>
         <List disablePadding>
           {tree.map((node) =>
             renderNode({
@@ -140,4 +169,3 @@ export function SectionTree({
     </Box>
   );
 }
-

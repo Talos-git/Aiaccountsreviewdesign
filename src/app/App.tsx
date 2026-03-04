@@ -18,6 +18,7 @@ import {
   Link,
   FormControl,
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import {
   ArrowBack,
   Home,
@@ -70,56 +71,65 @@ export default function App() {
           <>
             {/* Middle Panel - Checklist */}
             <Box
-              sx={{
-                width: 637.5,
-                borderRight: '1px solid #e0e0e0',
-                display: 'flex',
-                flexDirection: 'column',
-              }}
+	              sx={{
+	                width: 637.5,
+	                borderRight: (theme) => `1px solid ${theme.palette.divider}`,
+	                display: 'flex',
+	                flexDirection: 'column',
+	              }}
             >
               {/* Header */}
-              <Box
-                sx={{
-                  height: 63.75,
-                  px: 2,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  borderBottom: '1px solid #e0e0e0',
-                }}
-              >
+	              <Box
+	                sx={{
+	                  height: 63.75,
+	                  px: 2,
+	                  display: 'flex',
+	                  alignItems: 'center',
+	                  justifyContent: 'space-between',
+	                  borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
+	                }}
+	              >
                 <Typography variant="body2" color="text.secondary" sx={{ fontSize: 13 }}>
                   Make sure all checks are confirmed (0/13 done)
                 </Typography>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  endIcon={<KeyboardArrowDown />}
-                  sx={{ textTransform: 'none', fontSize: 13, color: '#666', borderColor: '#e0e0e0' }}
-                >
-                  Confirm all
-                </Button>
-              </Box>
+	                <Button
+	                  variant="outlined"
+	                  size="small"
+	                  endIcon={<KeyboardArrowDown />}
+	                  sx={(theme) => ({
+	                    textTransform: 'none',
+	                    fontSize: 13,
+	                    color: theme.palette.text.secondary,
+	                    borderColor: alpha(theme.palette.text.primary, 0.12),
+	                    backgroundColor: alpha(theme.palette.background.paper, 0.35),
+	                  })}
+	                >
+	                  Confirm all
+	                </Button>
+	              </Box>
 
               {/* Scrollable List */}
               <Box sx={{ flex: 1, overflow: 'auto' }}>
                 <List sx={{ p: 0 }}>
                   {checklistItems.map((item, index) => (
-                    <ListItem
-                      key={item.id}
-                      onClick={() => setSelectedItem(item.id)}
-                      sx={{
-                        height: item.height,
-                        borderBottom: '1px solid #e0e0e0',
-                        bgcolor: index === 0 ? '#e3f2fd' : selectedItem === item.id ? '#e3f2fd' : 'white',
-                        cursor: 'pointer',
-                        '&:hover': {
-                          bgcolor: '#f5f5f5',
-                        },
-                        px: 2,
-                        gap: 2,
-                      }}
-                    >
+	                    <ListItem
+	                      key={item.id}
+	                      onClick={() => setSelectedItem(item.id)}
+	                      sx={(theme) => ({
+	                        height: item.height,
+	                        borderBottom: `1px solid ${theme.palette.divider}`,
+	                        bgcolor:
+	                          index === 0 || selectedItem === item.id
+	                            ? alpha(theme.palette.primary.main, 0.10)
+	                            : alpha(theme.palette.background.paper, 0.45),
+	                        cursor: 'pointer',
+	                        '&:hover': {
+	                          bgcolor: alpha(theme.palette.text.primary, 0.04),
+	                        },
+	                        px: 2,
+	                        gap: 2,
+	                      })}
+	                    >
                       <Badge
                         badgeContent="!"
                         sx={{
@@ -134,39 +144,39 @@ export default function App() {
                           },
                         }}
                       />
-                      <ListItemText
-                        primary={item.text}
-                        primaryTypographyProps={{
-                          sx: { fontSize: 14, color: '#333', lineHeight: 1.5 },
-                        }}
-                      />
-                    </ListItem>
-                  ))}
+	                      <ListItemText
+	                        primary={item.text}
+	                        primaryTypographyProps={{
+	                          sx: { fontSize: 14, color: 'text.primary', lineHeight: 1.5 },
+	                        }}
+	                      />
+	                    </ListItem>
+	                  ))}
                 </List>
               </Box>
             </Box>
 
             {/* Right Panel - Details */}
-            <Box
-              sx={{
-                flex: 1,
-                bgcolor: '#fafafa',
-                display: 'flex',
-                flexDirection: 'column',
-              }}
-            >
+	            <Box
+	              sx={{
+	                flex: 1,
+	                bgcolor: (theme) => alpha(theme.palette.text.primary, 0.02),
+	                display: 'flex',
+	                flexDirection: 'column',
+	              }}
+	            >
               {/* Selected Item Header */}
-              <Box
-                sx={{
-                  height: 55,
-                  px: 2,
-                  bgcolor: 'white',
-                  borderBottom: '1px solid #e0e0e0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 2,
-                }}
-              >
+	              <Box
+	                sx={{
+	                  height: 55,
+	                  px: 2,
+	                  bgcolor: (theme) => alpha(theme.palette.background.paper, 0.50),
+	                  borderBottom: (theme) => `1px solid ${theme.palette.divider}`,
+	                  display: 'flex',
+	                  alignItems: 'center',
+	                  gap: 2,
+	                }}
+	              >
                 <Badge
                   badgeContent="!"
                   sx={{
@@ -181,21 +191,21 @@ export default function App() {
                     },
                   }}
                 />
-                <Typography variant="body2" sx={{ fontSize: 14, color: '#333' }}>
-                  {checklistItems[0].text}
-                </Typography>
-              </Box>
+	                <Typography variant="body2" sx={{ fontSize: 14, color: 'text.primary' }}>
+	                  {checklistItems[0].text}
+	                </Typography>
+	              </Box>
 
               {/* Content */}
-              <Box sx={{ flex: 1, overflow: 'auto', p: 3 }}>
-                {/* Action Section */}
-                <Box sx={{ mb: 3 }}>
-                  <Typography variant="subtitle2" sx={{ fontSize: 13, fontWeight: 700, mb: 1 }}>
-                    Action
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontSize: 13, color: '#666', mb: 1 }}>
-                    To ensure consistent currency presentation and usage
-                  </Typography>
+	              <Box sx={{ flex: 1, overflow: 'auto', p: 3 }}>
+	                {/* Action Section */}
+	                <Box sx={{ mb: 3 }}>
+	                  <Typography variant="subtitle2" sx={{ fontSize: 13, fontWeight: 700, mb: 1 }}>
+	                    Action
+	                  </Typography>
+	                  <Typography variant="body2" sx={{ fontSize: 13, color: 'text.secondary', mb: 1 }}>
+	                    To ensure consistent currency presentation and usage
+	                  </Typography>
                   <Link
                     href="#"
                     sx={{
@@ -231,16 +241,16 @@ export default function App() {
                 </FormControl>
 
                 {/* Settings Icon */}
-                <IconButton size="small" sx={{ color: '#666', mb: 2 }}>
-                  <Settings sx={{ fontSize: 18 }} />
-                </IconButton>
+	                <IconButton size="small" sx={{ color: 'text.secondary', mb: 2 }}>
+	                  <Settings sx={{ fontSize: 18 }} />
+	                </IconButton>
 
                 {/* Note Section */}
-                <Box>
-                  <Typography variant="body2" sx={{ fontSize: 13, color: '#333', mb: 1 }}>
-                    Note
-                  </Typography>
-                  <TextField
+	                <Box>
+	                  <Typography variant="body2" sx={{ fontSize: 13, color: 'text.primary', mb: 1 }}>
+	                    Note
+	                  </Typography>
+	                  <TextField
                     multiline
                     rows={5}
                     fullWidth
@@ -265,17 +275,17 @@ export default function App() {
       case 1: // AI Review tab
         return <AiReviewTab />;
 
-      default:
-        return (
-          <Box
-            sx={{
-              flex: 1,
-              bgcolor: '#fafafa',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
+	      default:
+	        return (
+	          <Box
+	            sx={{
+	              flex: 1,
+	              bgcolor: (theme) => alpha(theme.palette.text.primary, 0.02),
+	              display: 'flex',
+	              alignItems: 'center',
+	              justifyContent: 'center',
+	            }}
+	          >
             <Typography variant="body1" color="text.secondary">
               Content coming soon
             </Typography>
@@ -285,18 +295,18 @@ export default function App() {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', bgcolor: 'white' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', bgcolor: 'background.default' }}>
       {/* Top AppBar */}
-      <AppBar position="static" color="default" elevation={0} sx={{ borderBottom: '1px solid #e0e0e0' }}>
+      <AppBar position="static" color="default" elevation={0} sx={{ borderBottom: (theme) => `1px solid ${theme.palette.divider}` }}>
         <Toolbar sx={{ minHeight: '61.5px !important', px: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flex: 1 }}>
             <IconButton
               sx={{
-                bgcolor: '#1976d2',
-                color: 'white',
+                bgcolor: 'primary.main',
+                color: 'common.white',
                 width: 36,
                 height: 36,
-                '&:hover': { bgcolor: '#1565c0' },
+                '&:hover': { bgcolor: 'primary.dark' },
               }}
             >
               <ArrowBack sx={{ fontSize: 20 }} />
@@ -319,7 +329,7 @@ export default function App() {
       </AppBar>
 
       {/* Tabs */}
-      <Box sx={{ borderBottom: '1px solid #e0e0e0' }}>
+      <Box sx={{ borderBottom: (theme) => `1px solid ${theme.palette.divider}` }}>
         <Tabs
           value={selectedTab}
           onChange={handleTabChange}
@@ -346,8 +356,8 @@ export default function App() {
         <Box
           sx={{
             width: 64,
-            bgcolor: '#fafafa',
-            borderRight: '1px solid #e0e0e0',
+            bgcolor: (theme) => alpha(theme.palette.text.primary, 0.02),
+            borderRight: (theme) => `1px solid ${theme.palette.divider}`,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
@@ -355,31 +365,31 @@ export default function App() {
             gap: 1,
           }}
         >
-          <IconButton sx={{ color: '#666' }}>
+          <IconButton sx={{ color: 'text.secondary' }}>
             <Home />
           </IconButton>
-          <IconButton sx={{ color: '#666' }}>
+          <IconButton sx={{ color: 'text.secondary' }}>
             <ChatBubble />
           </IconButton>
-          <IconButton sx={{ color: '#666' }}>
+          <IconButton sx={{ color: 'text.secondary' }}>
             <Person />
           </IconButton>
-          <IconButton sx={{ color: '#666' }}>
+          <IconButton sx={{ color: 'text.secondary' }}>
             <Description />
           </IconButton>
-          <IconButton sx={{ color: '#666' }}>
+          <IconButton sx={{ color: 'text.secondary' }}>
             <Folder />
           </IconButton>
-          <IconButton sx={{ color: '#666' }}>
+          <IconButton sx={{ color: 'text.secondary' }}>
             <MenuBook />
           </IconButton>
-          <IconButton sx={{ color: '#666' }}>
+          <IconButton sx={{ color: 'text.secondary' }}>
             <BarChart />
           </IconButton>
-          <IconButton sx={{ color: '#666' }}>
+          <IconButton sx={{ color: 'text.secondary' }}>
             <Dashboard />
           </IconButton>
-          <IconButton sx={{ color: '#666' }}>
+          <IconButton sx={{ color: 'text.secondary' }}>
             <Settings />
           </IconButton>
         </Box>

@@ -273,78 +273,166 @@ export function AiReviewTab() {
   );
 
   return (
-    <Box sx={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-      {isNarrow ? (
-        <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
-          <Box sx={{ flex: '0 0 auto', borderBottom: '1px solid #e0e0e0', maxHeight: 260, overflow: 'auto' }}>
-            <SummaryPanel review={state.review} summaryAll={summaryAll} summaryFiltered={summaryFiltered} />
-          </Box>
+    <Box sx={{ position: 'relative', flex: 1, overflow: 'hidden', bgcolor: 'background.default' }}>
+      <Box
+        sx={{
+          position: 'absolute',
+          inset: 0,
+          pointerEvents: 'none',
+          background:
+            'radial-gradient(900px circle at 0% 0%, rgba(20,184,166,0.18) 0%, rgba(20,184,166,0) 60%), radial-gradient(900px circle at 100% 0%, rgba(56,189,248,0.16) 0%, rgba(56,189,248,0) 55%), linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%)',
+        }}
+      />
 
-          <Box sx={{ flex: 1, overflow: 'hidden' }}>
-            <FindingsPanel
-              findings={filteredFindings}
-              renderLimit={state.renderLimit}
-              onLoadMore={() => dispatch({ type: 'load_more' })}
-              showSectionsButton
-              onOpenSections={() => setSectionsDrawerOpen(true)}
-              expandedFindingIds={state.expandedFindingIds}
-              selectedFindingIds={state.selectedFindingIds}
-              notesOpenFindingIds={state.notesOpenFindingIds}
-              selectedCountInFiltered={selectedCountInFiltered}
-              allSelectedInFiltered={allSelectedInFiltered}
-              partiallySelectedInFiltered={partiallySelectedInFiltered}
-              onToggleSelectAllFiltered={onToggleSelectAllFiltered}
-              onBulkMarkIrrelevant={() => onBulkSetStatus('irrelevant')}
-              onBulkMarkComplete={() => onBulkSetStatus('complete')}
-              onOpenSendDialog={() => dispatch({ type: 'open_send_dialog' })}
-              sendEnabled={sendEnabled}
-              onToggleExpanded={(id) => dispatch({ type: 'toggle_finding_expand', id })}
-              onToggleSelected={(id) => dispatch({ type: 'toggle_finding_selected', id })}
-              onMarkIrrelevant={onMarkIrrelevant}
-              onMarkComplete={onMarkComplete}
-              onToggleNotes={(id) => dispatch({ type: 'toggle_notes', id })}
-              onChangeNotes={(id, notes) => dispatch({ type: 'set_notes', id, notes })}
-            />
-          </Box>
+      <Box sx={{ position: 'relative', display: 'flex', flex: 1, minHeight: 0, p: 2, gap: 2, overflow: 'hidden' }}>
+        {isNarrow ? (
+          <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0, gap: 2 }}>
+              <Box
+                sx={{
+                  flex: '0 0 auto',
+                  maxHeight: 280,
+                  overflow: 'auto',
+                  border: (theme) => `1px solid ${theme.palette.divider}`,
+                  borderRadius: 4,
+                  backgroundColor: 'rgba(255,255,255,0.70)',
+                  backdropFilter: 'blur(10px)',
+                  boxShadow: '0 18px 45px rgba(2,6,23,0.08)',
+                }}
+              >
+                <SummaryPanel review={state.review} summaryAll={summaryAll} summaryFiltered={summaryFiltered} />
+              </Box>
 
-          <Drawer anchor="left" open={sectionsDrawerOpen} onClose={() => setSectionsDrawerOpen(false)}>
-            <Box sx={{ width: 320, height: '100%' }}>{sectionsPanel}</Box>
-          </Drawer>
-        </Box>
-      ) : (
-        <>
-          <Box sx={{ width: 320, borderRight: '1px solid #e0e0e0', bgcolor: 'white' }}>{sectionsPanel}</Box>
+              <Box
+                sx={{
+                  flex: 1,
+                  minHeight: 0,
+                  overflow: 'hidden',
+                  border: (theme) => `1px solid ${theme.palette.divider}`,
+                  borderRadius: 4,
+                  backgroundColor: 'rgba(255,255,255,0.70)',
+                  backdropFilter: 'blur(10px)',
+                  boxShadow: '0 18px 45px rgba(2,6,23,0.08)',
+                }}
+              >
+                <FindingsPanel
+                  findings={filteredFindings}
+                  renderLimit={state.renderLimit}
+                  onLoadMore={() => dispatch({ type: 'load_more' })}
+                  showSectionsButton
+                  onOpenSections={() => setSectionsDrawerOpen(true)}
+                  expandedFindingIds={state.expandedFindingIds}
+                  selectedFindingIds={state.selectedFindingIds}
+                  notesOpenFindingIds={state.notesOpenFindingIds}
+                  selectedCountInFiltered={selectedCountInFiltered}
+                  allSelectedInFiltered={allSelectedInFiltered}
+                  partiallySelectedInFiltered={partiallySelectedInFiltered}
+                  onToggleSelectAllFiltered={onToggleSelectAllFiltered}
+                  onBulkMarkIrrelevant={() => onBulkSetStatus('irrelevant')}
+                  onBulkMarkComplete={() => onBulkSetStatus('complete')}
+                  onOpenSendDialog={() => dispatch({ type: 'open_send_dialog' })}
+                  sendEnabled={sendEnabled}
+                  onToggleExpanded={(id) => dispatch({ type: 'toggle_finding_expand', id })}
+                  onToggleSelected={(id) => dispatch({ type: 'toggle_finding_selected', id })}
+                  onMarkIrrelevant={onMarkIrrelevant}
+                  onMarkComplete={onMarkComplete}
+                  onToggleNotes={(id) => dispatch({ type: 'toggle_notes', id })}
+                  onChangeNotes={(id, notes) => dispatch({ type: 'set_notes', id, notes })}
+                />
+              </Box>
 
-          <Box sx={{ flex: 1, overflow: 'hidden' }}>
-            <FindingsPanel
-              findings={filteredFindings}
-              renderLimit={state.renderLimit}
-              onLoadMore={() => dispatch({ type: 'load_more' })}
-              expandedFindingIds={state.expandedFindingIds}
-              selectedFindingIds={state.selectedFindingIds}
-              notesOpenFindingIds={state.notesOpenFindingIds}
-              selectedCountInFiltered={selectedCountInFiltered}
-              allSelectedInFiltered={allSelectedInFiltered}
-              partiallySelectedInFiltered={partiallySelectedInFiltered}
-              onToggleSelectAllFiltered={onToggleSelectAllFiltered}
-              onBulkMarkIrrelevant={() => onBulkSetStatus('irrelevant')}
-              onBulkMarkComplete={() => onBulkSetStatus('complete')}
-              onOpenSendDialog={() => dispatch({ type: 'open_send_dialog' })}
-              sendEnabled={sendEnabled}
-              onToggleExpanded={(id) => dispatch({ type: 'toggle_finding_expand', id })}
-              onToggleSelected={(id) => dispatch({ type: 'toggle_finding_selected', id })}
-              onMarkIrrelevant={onMarkIrrelevant}
-              onMarkComplete={onMarkComplete}
-              onToggleNotes={(id) => dispatch({ type: 'toggle_notes', id })}
-              onChangeNotes={(id, notes) => dispatch({ type: 'set_notes', id, notes })}
-            />
+              <Drawer
+                anchor="left"
+                open={sectionsDrawerOpen}
+                onClose={() => setSectionsDrawerOpen(false)}
+                PaperProps={{ sx: { background: 'transparent', boxShadow: 'none' } }}
+              >
+                <Box sx={{ width: 360, height: '100%', p: 2 }}>
+                  <Box
+                    sx={{
+                      height: '100%',
+                      border: (theme) => `1px solid ${theme.palette.divider}`,
+                      borderRadius: 4,
+                      overflow: 'hidden',
+                      backgroundColor: 'rgba(255,255,255,0.80)',
+                      backdropFilter: 'blur(10px)',
+                      boxShadow: '0 18px 45px rgba(2,6,23,0.10)',
+                    }}
+                  >
+                    {sectionsPanel}
+                  </Box>
+                </Box>
+              </Drawer>
           </Box>
+        ) : (
+          <>
+              <Box
+                sx={{
+                  width: 320,
+                  minHeight: 0,
+                  border: (theme) => `1px solid ${theme.palette.divider}`,
+                  borderRadius: 4,
+                  overflow: 'hidden',
+                  backgroundColor: 'rgba(255,255,255,0.70)',
+                  backdropFilter: 'blur(10px)',
+                  boxShadow: '0 18px 45px rgba(2,6,23,0.08)',
+                }}
+              >
+                {sectionsPanel}
+              </Box>
 
-          <Box sx={{ width: 320, borderLeft: '1px solid #e0e0e0' }}>
-            <SummaryPanel review={state.review} summaryAll={summaryAll} summaryFiltered={summaryFiltered} />
-          </Box>
-        </>
-      )}
+              <Box
+                sx={{
+                  flex: 1,
+                  minHeight: 0,
+                  overflow: 'hidden',
+                  border: (theme) => `1px solid ${theme.palette.divider}`,
+                  borderRadius: 4,
+                  backgroundColor: 'rgba(255,255,255,0.70)',
+                  backdropFilter: 'blur(10px)',
+                  boxShadow: '0 18px 45px rgba(2,6,23,0.08)',
+                }}
+              >
+                <FindingsPanel
+                  findings={filteredFindings}
+                  renderLimit={state.renderLimit}
+                  onLoadMore={() => dispatch({ type: 'load_more' })}
+                  expandedFindingIds={state.expandedFindingIds}
+                  selectedFindingIds={state.selectedFindingIds}
+                  notesOpenFindingIds={state.notesOpenFindingIds}
+                  selectedCountInFiltered={selectedCountInFiltered}
+                  allSelectedInFiltered={allSelectedInFiltered}
+                  partiallySelectedInFiltered={partiallySelectedInFiltered}
+                  onToggleSelectAllFiltered={onToggleSelectAllFiltered}
+                  onBulkMarkIrrelevant={() => onBulkSetStatus('irrelevant')}
+                  onBulkMarkComplete={() => onBulkSetStatus('complete')}
+                  onOpenSendDialog={() => dispatch({ type: 'open_send_dialog' })}
+                  sendEnabled={sendEnabled}
+                  onToggleExpanded={(id) => dispatch({ type: 'toggle_finding_expand', id })}
+                  onToggleSelected={(id) => dispatch({ type: 'toggle_finding_selected', id })}
+                  onMarkIrrelevant={onMarkIrrelevant}
+                  onMarkComplete={onMarkComplete}
+                  onToggleNotes={(id) => dispatch({ type: 'toggle_notes', id })}
+                  onChangeNotes={(id, notes) => dispatch({ type: 'set_notes', id, notes })}
+                />
+              </Box>
+
+              <Box
+                sx={{
+                  width: 340,
+                  minHeight: 0,
+                  border: (theme) => `1px solid ${theme.palette.divider}`,
+                  borderRadius: 4,
+                  overflow: 'hidden',
+                  backgroundColor: 'rgba(255,255,255,0.70)',
+                  backdropFilter: 'blur(10px)',
+                  boxShadow: '0 18px 45px rgba(2,6,23,0.08)',
+                }}
+              >
+                <SummaryPanel review={state.review} summaryAll={summaryAll} summaryFiltered={summaryFiltered} />
+              </Box>
+          </>
+        )}
+      </Box>
 
       <SendToBookkeeperDialog
         open={state.sendDialogOpen}

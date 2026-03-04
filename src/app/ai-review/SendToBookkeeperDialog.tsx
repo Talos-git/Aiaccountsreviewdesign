@@ -11,6 +11,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 
 import type { Finding } from './types';
 
@@ -36,7 +37,7 @@ export function SendToBookkeeperDialog({
       <DialogTitle>Send to Bookkeeper</DialogTitle>
 
       <DialogContent>
-        <Typography variant="body2" sx={{ color: '#666', mb: 2 }}>
+        <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
           You are sending {selectedFindings.length} finding(s). This is a prototype flow and will only update local UI state.
         </Typography>
 
@@ -54,7 +55,16 @@ export function SendToBookkeeperDialog({
           <Typography variant="subtitle2" sx={{ fontSize: 13, fontWeight: 700, mb: 1 }}>
             Preview
           </Typography>
-          <List dense sx={{ maxHeight: 240, overflow: 'auto', border: '1px solid #e0e0e0', borderRadius: 1 }}>
+          <List
+            dense
+            sx={(theme) => ({
+              maxHeight: 240,
+              overflow: 'auto',
+              border: `1px solid ${theme.palette.divider}`,
+              borderRadius: 3,
+              backgroundColor: alpha(theme.palette.background.paper, 0.55),
+            })}
+          >
             {selectedFindings.map((f) => (
               <ListItem key={f.id} divider>
                 <ListItemText
@@ -80,4 +90,3 @@ export function SendToBookkeeperDialog({
     </Dialog>
   );
 }
-

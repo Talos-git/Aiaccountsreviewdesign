@@ -1,5 +1,6 @@
 import { Box, Button, Checkbox, Divider, Stack, Typography } from '@mui/material';
 import { AccountTree, DoneAll, ReportOff, Send } from '@mui/icons-material';
+import { alpha } from '@mui/material/styles';
 
 import type { Finding } from './types';
 import { FindingCard } from './FindingCard';
@@ -58,13 +59,20 @@ export function FindingsPanel({
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid #e0e0e0', bgcolor: 'white' }}>
+      <Box
+        sx={(theme) => ({
+          px: 2,
+          py: 1.5,
+          borderBottom: `1px solid ${theme.palette.divider}`,
+          backgroundColor: alpha(theme.palette.background.paper, 0.35),
+        })}
+      >
         <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={2} sx={{ flexWrap: 'wrap' }} useFlexGap>
           <Box>
-            <Typography variant="subtitle2" sx={{ fontSize: 13, fontWeight: 700 }}>
+            <Typography variant="subtitle2" sx={{ fontSize: 13, fontWeight: 700, color: 'text.primary' }}>
               Findings ({findings.length})
             </Typography>
-            <Typography variant="caption" sx={{ color: '#666' }}>
+            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
               Selected: {selectedCountInFiltered}
             </Typography>
           </Box>
@@ -88,7 +96,7 @@ export function FindingsPanel({
               onChange={onToggleSelectAllFiltered}
               size="small"
             />
-            <Typography variant="caption" sx={{ color: '#666', mr: 1 }}>
+            <Typography variant="caption" sx={{ color: 'text.secondary', mr: 1 }}>
               Select all (filtered)
             </Typography>
 
@@ -126,11 +134,18 @@ export function FindingsPanel({
         </Stack>
       </Box>
 
-      <Divider />
+      <Divider sx={{ borderColor: (theme) => theme.palette.divider }} />
 
-      <Box sx={{ flex: 1, overflow: 'auto', p: 2, bgcolor: '#fafafa' }}>
+      <Box
+        sx={(theme) => ({
+          flex: 1,
+          overflow: 'auto',
+          p: 2,
+          backgroundColor: alpha(theme.palette.text.primary, 0.02),
+        })}
+      >
         {findings.length === 0 ? (
-          <Typography variant="body2" sx={{ color: '#666' }}>
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
             No findings for this section.
           </Typography>
         ) : (
