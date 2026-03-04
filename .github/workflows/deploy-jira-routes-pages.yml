@@ -49,7 +49,7 @@ jobs:
           echo "jira_key=${jira_key}" >> "${GITHUB_OUTPUT}"
 
       - name: Build app for Jira route
-        run: npm run build -- --base=/${{ steps.jira.outputs.jira_key }}/
+        run: npm run build -- --base=/${{ github.event.repository.name }}/${{ steps.jira.outputs.jira_key }}/
 
       - name: Create root landing page
         run: |
