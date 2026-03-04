@@ -32,6 +32,7 @@ import {
   Launch,
   KeyboardArrowDown,
 } from '@mui/icons-material';
+import { CommandCentreReview } from './features/command-centre/CommandCentreReview';
 
 // Checklist data
 const checklistItems = [
@@ -261,21 +262,7 @@ export default function App() {
         );
 
       case 1: // AI Review tab
-        return (
-          <Box
-            sx={{
-              flex: 1,
-              bgcolor: '#fafafa',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Typography variant="body1" color="text.secondary">
-              AI Review - Coming Soon
-            </Typography>
-          </Box>
-        );
+        return <CommandCentreReview />;
 
       default:
         return (
