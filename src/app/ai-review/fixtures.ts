@@ -1,7 +1,7 @@
 import type { Assertion, Finding, FindingSource, FindingStatus, ReviewMeta, SectionPath, Severity } from './types';
 
 export const reviewMetaFixture: ReviewMeta = {
-  companyName: 'Royale Infinite Pte. Ltd.',
+  companyName: 'Green Trees Pte. Ltd.',
   periodLabel: '1 Jan - 31 Dec 2023',
   version: 'v1',
   createdDateIso: '2026-01-30T03:53:42.948Z',
@@ -86,4 +86,3 @@ export function buildFindingsFixture(count = 60): Finding[] {
 
   return findings;
 }
-
