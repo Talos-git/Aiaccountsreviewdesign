@@ -1,0 +1,58 @@
+name: Deploy Jira Preview Routes to GitHub Pages
+
+on:
+  push:
+    branches:
+      - "feature/MIND-415/ai-review-tab"
+      - "feature/MIND-554/command-centre-triage-mode"
+      - "feature/MIND-555/kanban-board-ui"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: deploy-jira-routes-gh-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Extract Jira key
+        id: jira
+        shell: bash
+        run: |
+          set -euo pipefail
+          jira_key="$(echo "${GITHUB_REF_NAME}" | grep -oE '[A-Z]+-[0-9]+' | head -n 1)"
+
+          if [[ -z "${jira_key}" ]]; then
+            echo "Failed to extract Jira key from branch: ${GITHUB_REF_NAME}" >&2
+            exit 1
+          fi
+
+          echo "jira_key=${jira_key}" >> "${GITHUB_OUTPUT}"
+
+      - name: Build app for Jira route
+        run: npm run build -- --base=/${{ steps.jira.outputs.jira_key }}/
+
+      - name: Deploy route to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./dist
+          destination_dir: ${{ steps.jira.outputs.jira_key }}
+          keep_files: true
