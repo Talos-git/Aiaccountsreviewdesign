@@ -1287,7 +1287,7 @@ export default function App() {
               <ArrowBack sx={{ fontSize: 20 }} />
             </IconButton>
             <Typography variant="body2" sx={{ fontSize: 14 }}>
-              Royale Infinite Pte. Ltd.: Review with Accountant for 1 Jan - 31 Dec 2023
+              Green Trees Pte. Ltd.: Review with Accountant for 1 Jan - 31 Dec 2023
             </Typography>
           </Box>
           <Button
