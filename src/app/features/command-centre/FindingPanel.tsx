@@ -7,8 +7,8 @@ import {
   Typography,
 } from '@mui/material';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
-import { ConversationMessage, Finding, FindingStatus } from './types';
-import { accentColor, accentGradient, assertionColors, displayFontFamily, monoFontFamily, roleColors, severityColors, shadowAccentLg, sourceColors, statusColors, statusLabel, uiFontFamily } from './tokens';
+import { Finding, FindingStatus } from './types';
+import { accentColor, accentGradient, displayFontFamily, monoFontFamily, roleColors, severityColors, shadowAccentLg, sourceColors, statusColors, statusLabel, uiFontFamily } from './tokens';
 import { ConversationThread } from './ConversationThread';
 
 interface FindingPanelProps {
@@ -25,6 +25,14 @@ interface FindingPanelProps {
   onPrev: () => void;
   onNext: () => void;
 }
+
+const formatCurrency = (amount: number): string => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  }).format(amount);
+};
 
 const toTitleCase = (value: string): string => {
   return value.charAt(0).toUpperCase() + value.slice(1);
@@ -47,10 +55,6 @@ export const FindingPanel = ({
   const severityLabel = toTitleCase(finding.severity);
   const sourceLabel = finding.source === 'ai' ? 'AI' : 'Code';
   const isAiSource = finding.source === 'ai';
-
-  const handleSendMessage = (text: string) => {
-    onAddMessage(text);
-  };
 
   const hasMessages = finding.messages.length > 0;
 
@@ -95,15 +99,15 @@ export const FindingPanel = ({
             }}
           />
           <Chip
-            label={`${finding.assertion} — ${finding.assertionLabel}`}
+            label={finding.assertion}
             size="small"
             sx={{
-              bgcolor: `${assertionColors[finding.assertion]}1A`,
-              color: assertionColors[finding.assertion],
+              bgcolor: '#F1F5F9',
+              color: '#475569',
               fontFamily: uiFontFamily,
               fontWeight: 600,
               borderRadius: 999,
-              border: `1px solid ${assertionColors[finding.assertion]}50`,
+              border: '1px solid #CBD5E1',
             }}
           />
           <Chip
@@ -132,9 +136,9 @@ export const FindingPanel = ({
           />
         </Stack>
 
-        {/* Path label */}
+        {/* Section > Category path */}
         <Typography sx={{ fontFamily: uiFontFamily, fontSize: 13, color: '#64748B', mb: 1.5 }}>
-          {finding.pathLabel}
+          {finding.section} &rsaquo; {finding.category}
         </Typography>
 
         {/* Finding title with severity left border */}
@@ -169,57 +173,10 @@ export const FindingPanel = ({
             mb: 2,
           }}
         >
-          <DataField label="Amount" value={finding.amountLabel} />
-          <DataField label="Account" value={finding.accountLabel} />
-          <DataField label="Period" value={finding.periodLabel} />
-          <DataField label="Fix" value={finding.fixLabel} />
-        </Box>
-
-        {/* Supporting refs */}
-        <Box sx={{ mb: 2.25 }}>
-          <Box
-            sx={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 0.75,
-              border: `1px solid ${accentColor}33`,
-              bgcolor: `${accentColor}0D`,
-              borderRadius: 999,
-              px: 1.25,
-              py: 0.35,
-              mb: 1,
-            }}
-          >
-            <Box sx={{ width: 5, height: 5, borderRadius: '50%', bgcolor: accentColor, flexShrink: 0 }} />
-            <Typography
-              sx={{
-                fontFamily: monoFontFamily,
-                fontSize: 10,
-                fontWeight: 600,
-                color: accentColor,
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-              }}
-            >
-              Supporting
-            </Typography>
-          </Box>
-          <Box
-            sx={{
-              border: '1px solid #E2E8F0',
-              borderRadius: 2,
-              p: 1.5,
-              bgcolor: '#FAFAFA',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
-            }}
-          >
-            <Typography sx={{ fontFamily: uiFontFamily, fontSize: 14, color: '#0F172A' }}>
-              {finding.supportingRefs.join(', ')}
-            </Typography>
-            <Typography sx={{ fontFamily: uiFontFamily, fontSize: 12, color: '#64748B', mt: 0.5 }}>
-              No additional receipts found in linked storage.
-            </Typography>
-          </Box>
+          <DataField label="Amount" value={formatCurrency(finding.amount)} />
+          <DataField label="Account" value={finding.accountName} />
+          <DataField label="Type" value={finding.findingType} />
+          <DataField label="Action Required" value={finding.actionRequired} />
         </Box>
 
         {/* Conversation thread */}
@@ -256,7 +213,7 @@ export const FindingPanel = ({
         <ConversationThread
           messages={finding.messages}
           activeRole={activeRole}
-          onSendMessage={handleSendMessage}
+          onSendMessage={onAddMessage}
         />
 
         {/* Action buttons */}
@@ -289,7 +246,7 @@ export const FindingPanel = ({
               <Button
                 fullWidth
                 variant="contained"
-                onClick={() => onMarkStatus('complete')}
+                onClick={() => onMarkStatus('resolved')}
                 sx={{
                   textTransform: 'none',
                   background: 'linear-gradient(135deg, #16A34A, #22C55E)',
@@ -305,7 +262,7 @@ export const FindingPanel = ({
                   },
                 }}
               >
-                Complete
+                Mark Resolved
               </Button>
             </Stack>
 
@@ -388,7 +345,7 @@ export const FindingPanel = ({
 
           {/* Keyboard shortcuts badge */}
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center' }}>
-            {([['J/K', 'nav'], ['I', 'irrelevant'], ['C', 'complete']] as const).map(([key, action]) => (
+            {([['J/K', 'nav'], ['I', 'irrelevant'], ['C', 'resolve']] as const).map(([key, action]) => (
               <Box key={key} sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
                 <Box
                   sx={{

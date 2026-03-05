@@ -9,9 +9,9 @@ import { uiFontFamily } from './tokens';
 import { useKeyboardShortcuts } from './useKeyboardShortcuts';
 
 const severityRank: Record<Finding['severity'], number> = {
-  high: 0,
-  medium: 1,
-  low: 2,
+  critical: 0,
+  warning: 1,
+  info: 2,
 };
 
 const sortFindings = (findings: Finding[], sortMode: QueueSortMode): Finding[] => {
@@ -23,7 +23,7 @@ const sortFindings = (findings: Finding[], sortMode: QueueSortMode): Finding[] =
     }
 
     if (sortMode === 'account') {
-      return left.accountLabel.localeCompare(right.accountLabel);
+      return left.accountName.localeCompare(right.accountName);
     }
 
     const severityDelta = severityRank[left.severity] - severityRank[right.severity];
@@ -60,7 +60,7 @@ export const CommandCentreReview = () => {
 
   const handleRoleChange = useCallback((role: 'accountant' | 'bookkeeper') => {
     setActiveRole(role);
-    setStatusFilter(role === 'bookkeeper' ? 'needs_action' : 'all');
+    setStatusFilter(role === 'bookkeeper' ? 'sent_to_bookkeeper' : 'all');
   }, []);
 
   const sortedFindings = useMemo(() => sortFindings(findings, sortMode), [findings, sortMode]);
@@ -69,7 +69,7 @@ export const CommandCentreReview = () => {
   const filteredFindings = useMemo(() => {
     return sortedFindings.filter((finding) => {
       if (statusFilter !== 'all' && finding.status !== statusFilter) return false;
-      if (pathFilter !== 'all' && finding.pathLabel !== pathFilter) return false;
+      if (pathFilter !== 'all' && finding.section !== pathFilter) return false;
       return true;
     });
   }, [sortedFindings, statusFilter, pathFilter]);
@@ -87,39 +87,39 @@ export const CommandCentreReview = () => {
   const counts = useMemo(() => {
     return findings.reduce(
       (accumulator, finding) => {
-        if (finding.severity === 'high') {
-          accumulator.high += 1;
+        if (finding.severity === 'critical') {
+          accumulator.critical += 1;
         }
 
-        if (finding.severity === 'medium') {
-          accumulator.medium += 1;
+        if (finding.severity === 'warning') {
+          accumulator.warning += 1;
         }
 
-        if (finding.severity === 'low') {
-          accumulator.low += 1;
+        if (finding.severity === 'info') {
+          accumulator.info += 1;
         }
 
-        if (finding.status === 'complete' || finding.status === 'irrelevant') {
+        if (finding.status === 'resolved' || finding.status === 'irrelevant') {
           accumulator.reviewed += 1;
         }
 
         return accumulator;
       },
-      { high: 0, medium: 0, low: 0, reviewed: 0 },
+      { critical: 0, warning: 0, info: 0, reviewed: 0 },
     );
   }, [findings]);
 
-  const highSeverityIds = useMemo(() => {
-    return filteredFindings.filter((finding) => finding.severity === 'high').map((finding) => finding.id);
+  const criticalSeverityIds = useMemo(() => {
+    return filteredFindings.filter((finding) => finding.severity === 'critical').map((finding) => finding.id);
   }, [filteredFindings]);
 
-  const isAllHighSelected = useMemo(() => {
-    return highSeverityIds.length > 0 && highSeverityIds.every((findingId) => selectedFindingSet.has(findingId));
-  }, [highSeverityIds, selectedFindingSet]);
+  const isAllCriticalSelected = useMemo(() => {
+    return criticalSeverityIds.length > 0 && criticalSeverityIds.every((findingId) => selectedFindingSet.has(findingId));
+  }, [criticalSeverityIds, selectedFindingSet]);
 
-  const isHighIndeterminate = useMemo(() => {
-    return highSeverityIds.some((findingId) => selectedFindingSet.has(findingId)) && !isAllHighSelected;
-  }, [highSeverityIds, isAllHighSelected, selectedFindingSet]);
+  const isCriticalIndeterminate = useMemo(() => {
+    return criticalSeverityIds.some((findingId) => selectedFindingSet.has(findingId)) && !isAllCriticalSelected;
+  }, [criticalSeverityIds, isAllCriticalSelected, selectedFindingSet]);
 
   const updateFindingStatus = useCallback((findingId: string, status: FindingStatus) => {
     setFindings((previous) => {
@@ -145,11 +145,11 @@ export const CommandCentreReview = () => {
   }, [activeRole]);
 
   const handleSendToBookkeeper = useCallback(() => {
-    updateFindingStatus(currentFinding.id, 'needs_action');
+    updateFindingStatus(currentFinding.id, 'sent_to_bookkeeper');
   }, [currentFinding.id, updateFindingStatus]);
 
   const handleBookkeeperReply = useCallback(() => {
-    updateFindingStatus(currentFinding.id, 'in_review');
+    updateFindingStatus(currentFinding.id, 'noted');
   }, [currentFinding.id, updateFindingStatus]);
 
   const handleNext = useCallback(() => {
@@ -178,25 +178,25 @@ export const CommandCentreReview = () => {
     });
   }, []);
 
-  const handleToggleSelectAllHigh = useCallback(() => {
+  const handleToggleSelectAllCritical = useCallback(() => {
     setSelectedFindingIds((previous) => {
       const selectedSet = new Set(previous);
 
-      if (highSeverityIds.length > 0 && highSeverityIds.every((id) => selectedSet.has(id))) {
-        return previous.filter((id) => !highSeverityIds.includes(id));
+      if (criticalSeverityIds.length > 0 && criticalSeverityIds.every((id) => selectedSet.has(id))) {
+        return previous.filter((id) => !criticalSeverityIds.includes(id));
       }
 
-      highSeverityIds.forEach((id) => selectedSet.add(id));
+      criticalSeverityIds.forEach((id) => selectedSet.add(id));
       return Array.from(selectedSet);
     });
-  }, [highSeverityIds]);
+  }, [criticalSeverityIds]);
 
   const handleApplyBulkAction = useCallback((action: BulkAction) => {
     if (selectedFindingIds.length === 0) {
       return;
     }
 
-    const nextStatus: FindingStatus = action === 'mark_complete' ? 'complete' : 'irrelevant';
+    const nextStatus: FindingStatus = action === 'mark_complete' ? 'resolved' : 'irrelevant';
     const selectedSet = new Set(selectedFindingIds);
 
     setFindings((previous) => {
@@ -219,7 +219,7 @@ export const CommandCentreReview = () => {
     onNext: handleNext,
     onPrev: handlePrev,
     onMarkIrrelevant: () => updateFindingStatus(currentFinding.id, 'irrelevant'),
-    onMarkComplete: () => updateFindingStatus(currentFinding.id, 'complete'),
+    onMarkComplete: () => updateFindingStatus(currentFinding.id, 'resolved'),
   });
 
   useEffect(() => {
@@ -251,9 +251,9 @@ export const CommandCentreReview = () => {
           setQueueDrawerOpen(false);
         }
       }}
-      onToggleSelectAllHigh={handleToggleSelectAllHigh}
-      isAllHighSelected={isAllHighSelected}
-      isHighIndeterminate={isHighIndeterminate}
+      onToggleSelectAllCritical={handleToggleSelectAllCritical}
+      isAllCriticalSelected={isAllCriticalSelected}
+      isCriticalIndeterminate={isCriticalIndeterminate}
       onApplyBulkAction={handleApplyBulkAction}
     />
   );
@@ -283,9 +283,9 @@ export const CommandCentreReview = () => {
             meta={mockReviewData.meta}
             totalFindings={totalFindings}
             reviewedCount={counts.reviewed}
-            highCount={counts.high}
-            mediumCount={counts.medium}
-            lowCount={counts.low}
+            criticalCount={counts.critical}
+            warningCount={counts.warning}
+            infoCount={counts.info}
             isMobile={isMobile}
             onOpenQueue={() => setQueueDrawerOpen(true)}
             activeRole={activeRole}

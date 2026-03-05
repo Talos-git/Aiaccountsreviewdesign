@@ -1,18 +1,17 @@
 import { FindingSeverity, FindingSource, FindingStatus } from './types';
 
 export const statusLabel: Record<FindingStatus, string> = {
-  draft_ai: 'Draft (AI)',
-  draft_human: 'Draft (Manual)',
-  needs_action: 'Needs Action',
-  in_review: 'In Review',
-  complete: 'Complete',
+  open: 'Open',
+  noted: 'Noted',
+  resolved: 'Resolved',
+  sent_to_bookkeeper: 'Sent to Bookkeeper',
   irrelevant: 'Irrelevant',
 };
 
 export const severityColors: Record<FindingSeverity, string> = {
-  high: '#EF4444',
-  medium: '#F97316',
-  low: '#EAB308',
+  critical: '#EF4444',
+  warning: '#F97316',
+  info: '#EAB308',
 };
 
 export const sourceColors: Record<FindingSource, string> = {
@@ -21,23 +20,16 @@ export const sourceColors: Record<FindingSource, string> = {
 };
 
 export const statusColors: Record<FindingStatus, string> = {
-  draft_ai: '#9CA3AF',
-  draft_human: '#60A5FA',
-  needs_action: '#F59E0B',
-  in_review: '#8B5CF6',
-  complete: '#22C55E',
+  open: '#9CA3AF',
+  noted: '#60A5FA',
+  resolved: '#22C55E',
+  sent_to_bookkeeper: '#F59E0B',
   irrelevant: '#6B7280',
 };
 
 export const roleColors = {
   accountant: '#0052FF',
   bookkeeper: '#7C3AED',
-};
-
-export const assertionColors: Record<string, string> = {
-  C: '#2563EB',
-  E: '#16A34A',
-  A: '#7C3AED',
 };
 
 export const accentColor = '#0052FF';

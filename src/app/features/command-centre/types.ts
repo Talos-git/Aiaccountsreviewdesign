@@ -1,10 +1,8 @@
-export type FindingSeverity = 'high' | 'medium' | 'low';
+export type FindingSeverity = 'critical' | 'warning' | 'info';
 
-export type FindingStatus = 'draft_ai' | 'draft_human' | 'needs_action' | 'in_review' | 'complete' | 'irrelevant';
+export type FindingStatus = 'open' | 'noted' | 'resolved' | 'sent_to_bookkeeper' | 'irrelevant';
 
 export type FindingSource = 'ai' | 'code';
-
-export type AssertionType = 'C' | 'E' | 'A';
 
 export type QueueSortMode = 'severity' | 'amount' | 'account';
 
@@ -27,7 +25,8 @@ export interface ReviewMeta {
   reviewId: string;
   title: string;
   clientName: string;
-  periodLabel: string;
+  periodStart: string;
+  periodEnd: string;
   versionLabel: string;
 }
 
@@ -35,17 +34,19 @@ export interface Finding {
   id: string;
   title: string;
   severity: FindingSeverity;
-  assertion: AssertionType;
-  assertionLabel: string;
-  pathLabel: string;
-  source: FindingSource;
-  amount: number;
-  amountLabel: string;
-  accountLabel: string;
-  periodLabel: string;
-  fixLabel: string;
-  supportingRefs: string[];
   status: FindingStatus;
+  source: FindingSource;
+  section: string;
+  accountName: string;
+  category: string;
+  assertion: string;
+  findingType: string;
+  amount: number;
+  description: string;
+  actionRequired: string;
+  accountantNote: string;
+  evidence: { refs: string[]; note?: string };
+  checkId?: string;
   messages: ConversationMessage[];
 }
 

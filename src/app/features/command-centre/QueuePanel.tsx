@@ -25,7 +25,7 @@ import {
 } from '@mui/icons-material';
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
 import { BulkAction, Finding, QueuePathFilter, QueueSortMode, QueueStatusFilter } from './types';
-import { accentColor, accentGradient, monoFontFamily, severityColors, shadowAccent, statusColors, uiFontFamily } from './tokens';
+import { accentColor, accentGradient, monoFontFamily, severityColors, shadowAccent, statusColors, statusLabel, uiFontFamily } from './tokens';
 
 interface QueuePanelProps {
   findings: Finding[];
@@ -40,9 +40,9 @@ interface QueuePanelProps {
   selectedIds: string[];
   onToggleSelectFinding: (findingId: string) => void;
   onOpenFinding: (findingId: string) => void;
-  onToggleSelectAllHigh: () => void;
-  isAllHighSelected: boolean;
-  isHighIndeterminate: boolean;
+  onToggleSelectAllCritical: () => void;
+  isAllCriticalSelected: boolean;
+  isCriticalIndeterminate: boolean;
   onApplyBulkAction: (action: BulkAction) => void;
 }
 
@@ -85,39 +85,27 @@ export const QueuePanel = ({
   selectedIds,
   onToggleSelectFinding,
   onOpenFinding,
-  onToggleSelectAllHigh,
-  isAllHighSelected,
-  isHighIndeterminate,
+  onToggleSelectAllCritical,
+  isAllCriticalSelected,
+  isCriticalIndeterminate,
   onApplyBulkAction,
 }: QueuePanelProps) => {
   const [bulkAction, setBulkAction] = useState<BulkAction>('mark_complete');
   const selectedIdSet = useMemo(() => new Set(selectedIds), [selectedIds]);
 
-  // Derive unique COA paths from all findings (unfiltered), grouped by top-level segment
-  const pathOptions = useMemo(() => {
+  // Derive unique sections from all findings (unfiltered)
+  const sectionOptions = useMemo(() => {
     const seen = new Set<string>();
-    const paths: string[] = [];
+    const sections: string[] = [];
     allFindings.forEach((f) => {
-      if (!seen.has(f.pathLabel)) {
-        seen.add(f.pathLabel);
-        paths.push(f.pathLabel);
+      if (!seen.has(f.section)) {
+        seen.add(f.section);
+        sections.push(f.section);
       }
     });
-    return paths.sort();
+    return sections.sort();
   }, [allFindings]);
 
-  // Group paths by top-level segment (BS / PL)
-  const pathGroups = useMemo(() => {
-    const groups: Record<string, string[]> = {};
-    pathOptions.forEach((path) => {
-      const segment = path.split(' > ')[0];
-      if (!groups[segment]) {
-        groups[segment] = [];
-      }
-      groups[segment].push(path);
-    });
-    return groups;
-  }, [pathOptions]);
   const listRef = useRef<FixedSizeList | null>(null);
   const rowRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const listContainerRef = useRef<HTMLDivElement | null>(null);
@@ -224,12 +212,12 @@ export const QueuePanel = ({
           </Typography>
         </Stack>
 
-        {/* Row 2: COA path filter + Status filter + Sort */}
+        {/* Row 2: Section filter + Status filter + Sort */}
         <Stack direction="row" alignItems="flex-end" spacing={0.75} flexWrap="wrap" useFlexGap>
           <Box>
             <Stack direction="row" alignItems="center" spacing={0.4} sx={{ mb: 0.4 }}>
               <AccountTree sx={{ fontSize: 10, color: '#94A3B8' }} />
-              <Typography sx={{ fontFamily: monoFontFamily, fontSize: 9, fontWeight: 600, color: '#94A3B8', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Path</Typography>
+              <Typography sx={{ fontFamily: monoFontFamily, fontSize: 9, fontWeight: 600, color: '#94A3B8', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Section</Typography>
             </Stack>
             <FormControl size="small">
               <Select
@@ -245,25 +233,12 @@ export const QueuePanel = ({
                   borderRadius: 1.5,
                 }}
               >
-                <MenuItem value="all" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>All paths</MenuItem>
-                {Object.entries(pathGroups).map(([segment, paths]) => [
-                  <MenuItem
-                    key={`group-${segment}`}
-                    disabled
-                    sx={{ fontFamily: monoFontFamily, fontSize: 10, fontWeight: 700, color: accentColor, letterSpacing: '0.06em', textTransform: 'uppercase', py: 0.5, opacity: '1 !important' }}
-                  >
-                    {segment}
-                  </MenuItem>,
-                  ...paths.map((path) => {
-                    const parts = path.split(' > ');
-                    const label = parts.slice(1).join(' > ');
-                    return (
-                      <MenuItem key={path} value={path} sx={{ fontFamily: uiFontFamily, fontSize: 12, pl: 3 }}>
-                        {label}
-                      </MenuItem>
-                    );
-                  }),
-                ])}
+                <MenuItem value="all" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>All sections</MenuItem>
+                {sectionOptions.map((section) => (
+                  <MenuItem key={section} value={section} sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>
+                    {section}
+                  </MenuItem>
+                ))}
               </Select>
             </FormControl>
           </Box>
@@ -287,12 +262,11 @@ export const QueuePanel = ({
                 }}
               >
                 <MenuItem value="all" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>All status</MenuItem>
-                <MenuItem value="draft_ai" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>Draft (AI)</MenuItem>
-                <MenuItem value="draft_human" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>Draft (Manual)</MenuItem>
-                <MenuItem value="needs_action" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>Needs Action</MenuItem>
-                <MenuItem value="in_review" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>In Review</MenuItem>
-                <MenuItem value="complete" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>Complete</MenuItem>
-                <MenuItem value="irrelevant" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>Irrelevant</MenuItem>
+                <MenuItem value="open" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>{statusLabel.open}</MenuItem>
+                <MenuItem value="noted" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>{statusLabel.noted}</MenuItem>
+                <MenuItem value="sent_to_bookkeeper" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>{statusLabel.sent_to_bookkeeper}</MenuItem>
+                <MenuItem value="resolved" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>{statusLabel.resolved}</MenuItem>
+                <MenuItem value="irrelevant" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>{statusLabel.irrelevant}</MenuItem>
               </Select>
             </FormControl>
           </Box>
@@ -368,9 +342,9 @@ export const QueuePanel = ({
         <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
           <Checkbox
             size="small"
-            checked={isAllHighSelected}
-            indeterminate={isHighIndeterminate}
-            onChange={onToggleSelectAllHigh}
+            checked={isAllCriticalSelected}
+            indeterminate={isCriticalIndeterminate}
+            onChange={onToggleSelectAllCritical}
             sx={{
               p: 0.4,
               color: '#CBD5E1',
@@ -379,8 +353,8 @@ export const QueuePanel = ({
           />
           <Typography sx={{ fontFamily: uiFontFamily, fontSize: 12, color: '#0F172A', fontWeight: 600 }}>
             Select all{' '}
-            <Box component="span" sx={{ color: severityColors.high, fontWeight: 700 }}>
-              HIGH
+            <Box component="span" sx={{ color: severityColors.critical, fontWeight: 700 }}>
+              CRITICAL
             </Box>
           </Typography>
         </Stack>
@@ -398,7 +372,7 @@ export const QueuePanel = ({
                 borderRadius: 1.5,
               }}
             >
-              <MenuItem value="mark_complete">Mark Complete</MenuItem>
+              <MenuItem value="mark_complete">Mark Resolved</MenuItem>
               <MenuItem value="mark_irrelevant">Mark Irrelevant</MenuItem>
             </Select>
           </FormControl>
@@ -442,6 +416,14 @@ interface QueueItemProps {
   onToggleSelect: (findingId: string) => void;
   onOpenFinding: (findingId: string) => void;
 }
+
+const formatCurrency = (amount: number): string => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  }).format(amount);
+};
 
 const QueueItem = ({ finding, isCurrent, isSelected, onToggleSelect, onOpenFinding }: QueueItemProps) => {
   const isIrrelevant = finding.status === 'irrelevant';
@@ -536,7 +518,7 @@ const QueueItem = ({ finding, isCurrent, isSelected, onToggleSelect, onOpenFindi
             letterSpacing: '0.02em',
           }}
         >
-          {finding.pathLabel}
+          {finding.category}
         </Typography>
         <Typography
           sx={{
@@ -549,7 +531,7 @@ const QueueItem = ({ finding, isCurrent, isSelected, onToggleSelect, onOpenFindi
             opacity: isIrrelevant ? 0.5 : 1,
           }}
         >
-          {finding.amountLabel}
+          {formatCurrency(finding.amount)}
         </Typography>
       </Box>
     </Box>
@@ -562,25 +544,25 @@ interface StatusGlyphProps {
 }
 
 const StatusGlyph = ({ status, isCurrent }: StatusGlyphProps) => {
-  if (status === 'complete') {
-    return <CheckCircle sx={{ fontSize: 18, color: statusColors.complete }} />;
+  if (status === 'resolved') {
+    return <CheckCircle sx={{ fontSize: 18, color: statusColors.resolved }} />;
   }
 
   if (status === 'irrelevant') {
     return <RemoveCircleOutline sx={{ fontSize: 18, color: statusColors.irrelevant }} />;
   }
 
-  if (status === 'needs_action') {
-    return <HourglassEmpty sx={{ fontSize: 17, color: statusColors.needs_action }} />;
+  if (status === 'sent_to_bookkeeper') {
+    return <HourglassEmpty sx={{ fontSize: 17, color: statusColors.sent_to_bookkeeper }} />;
   }
 
-  if (status === 'in_review') {
-    return <SwapHoriz sx={{ fontSize: 18, color: statusColors.in_review }} />;
+  if (status === 'noted') {
+    return <SwapHoriz sx={{ fontSize: 18, color: statusColors.noted }} />;
   }
 
   if (isCurrent) {
     return <PlayArrow sx={{ fontSize: 18, color: accentColor }} />;
   }
 
-  return <RadioButtonUnchecked sx={{ fontSize: 17, color: statusColors.draft_ai }} />;
+  return <RadioButtonUnchecked sx={{ fontSize: 17, color: statusColors.open }} />;
 };

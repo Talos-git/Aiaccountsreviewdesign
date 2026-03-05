@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { Box, Button, Divider, LinearProgress, Stack, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { Menu as MenuIcon } from '@mui/icons-material';
 import { ReviewMeta } from './types';
@@ -8,9 +8,9 @@ interface ReviewPageHeaderProps {
   meta: ReviewMeta;
   totalFindings: number;
   reviewedCount: number;
-  highCount: number;
-  mediumCount: number;
-  lowCount: number;
+  criticalCount: number;
+  warningCount: number;
+  infoCount: number;
   isMobile: boolean;
   onOpenQueue: () => void;
   activeRole: 'accountant' | 'bookkeeper';
@@ -70,15 +70,17 @@ export const ReviewPageHeader = ({
   meta,
   totalFindings,
   reviewedCount,
-  highCount,
-  mediumCount,
-  lowCount,
+  criticalCount,
+  warningCount,
+  infoCount,
   isMobile,
   onOpenQueue,
   activeRole,
   onRoleChange,
 }: ReviewPageHeaderProps) => {
   const progressPercent = totalFindings === 0 ? 0 : Math.round((reviewedCount / totalFindings) * 100);
+
+  const periodLabel = `${format(parseISO(meta.periodStart), 'MMM yyyy')} – ${format(parseISO(meta.periodEnd), 'MMM yyyy')}`;
 
   return (
     <Box
@@ -162,7 +164,7 @@ export const ReviewPageHeader = ({
             divider={<Divider orientation="vertical" flexItem sx={{ borderColor: '#CBD5E1', my: 0.25 }} />}
             sx={{ mt: 0.25, overflow: 'hidden' }}
           >
-            {[meta.clientName, meta.periodLabel, meta.versionLabel].filter(Boolean).map((v) => (
+            {[meta.clientName, periodLabel, meta.versionLabel].filter(Boolean).map((v) => (
               <Typography
                 key={v}
                 sx={{
@@ -277,9 +279,9 @@ export const ReviewPageHeader = ({
         }}
       >
         <StatTile value={String(totalFindings)} label="Findings" />
-        <StatTile value={String(highCount)} label="High" valueColor={severityColors.high} />
-        <StatTile value={String(mediumCount)} label="Medium" valueColor={severityColors.medium} />
-        <StatTile value={String(lowCount)} label="Low" valueColor={severityColors.low} />
+        <StatTile value={String(criticalCount)} label="Critical" valueColor={severityColors.critical} />
+        <StatTile value={String(warningCount)} label="Warning" valueColor={severityColors.warning} />
+        <StatTile value={String(infoCount)} label="Info" valueColor={severityColors.info} />
 
         <Box
           sx={{
