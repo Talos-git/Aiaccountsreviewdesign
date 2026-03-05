@@ -10,6 +10,8 @@ export type QueueSortMode = 'severity' | 'amount' | 'account';
 
 export type QueueStatusFilter = 'all' | FindingStatus;
 
+export type QueuePathFilter = 'all' | string;
+
 export type BulkAction = 'mark_irrelevant' | 'mark_complete';
 
 export type MessageAuthor = 'ai' | 'accountant' | 'bookkeeper';

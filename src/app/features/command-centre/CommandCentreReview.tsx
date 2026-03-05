@@ -4,7 +4,7 @@ import { defaultCurrentFindingId, mockReviewData } from './mockData';
 import { FindingPanel } from './FindingPanel';
 import { QueuePanel } from './QueuePanel';
 import { ReviewPageHeader } from './ReviewPageHeader';
-import { BulkAction, ConversationMessage, Finding, FindingStatus, QueueSortMode, QueueStatusFilter } from './types';
+import { BulkAction, ConversationMessage, Finding, FindingStatus, QueuePathFilter, QueueSortMode, QueueStatusFilter } from './types';
 import { uiFontFamily } from './tokens';
 import { useKeyboardShortcuts } from './useKeyboardShortcuts';
 
@@ -56,6 +56,7 @@ export const CommandCentreReview = () => {
   const [isQueueDrawerOpen, setQueueDrawerOpen] = useState(false);
   const [activeRole, setActiveRole] = useState<'accountant' | 'bookkeeper'>('accountant');
   const [statusFilter, setStatusFilter] = useState<QueueStatusFilter>('all');
+  const [pathFilter, setPathFilter] = useState<QueuePathFilter>('all');
 
   const handleRoleChange = useCallback((role: 'accountant' | 'bookkeeper') => {
     setActiveRole(role);
@@ -66,11 +67,12 @@ export const CommandCentreReview = () => {
   const totalFindings = findings.length;
 
   const filteredFindings = useMemo(() => {
-    if (statusFilter === 'all') {
-      return sortedFindings;
-    }
-    return sortedFindings.filter((finding) => finding.status === statusFilter);
-  }, [sortedFindings, statusFilter]);
+    return sortedFindings.filter((finding) => {
+      if (statusFilter !== 'all' && finding.status !== statusFilter) return false;
+      if (pathFilter !== 'all' && finding.pathLabel !== pathFilter) return false;
+      return true;
+    });
+  }, [sortedFindings, statusFilter, pathFilter]);
 
   const currentFinding = useMemo(() => {
     return filteredFindings.find((finding) => finding.id === currentFindingId) ?? filteredFindings[0] ?? sortedFindings[0];
@@ -233,11 +235,14 @@ export const CommandCentreReview = () => {
   const queuePanel = (
     <QueuePanel
       findings={filteredFindings}
+      allFindings={sortedFindings}
       currentFindingId={currentFinding?.id ?? ''}
       sortMode={sortMode}
       onSortModeChange={setSortMode}
       statusFilter={statusFilter}
       onStatusFilterChange={setStatusFilter}
+      pathFilter={pathFilter}
+      onPathFilterChange={setPathFilter}
       selectedIds={selectedFindingIds}
       onToggleSelectFinding={handleToggleSelectFinding}
       onOpenFinding={(findingId) => {

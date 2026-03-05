@@ -20,16 +20,19 @@ import {
   SwapHoriz,
 } from '@mui/icons-material';
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
-import { BulkAction, Finding, QueueSortMode, QueueStatusFilter } from './types';
+import { BulkAction, Finding, QueuePathFilter, QueueSortMode, QueueStatusFilter } from './types';
 import { accentColor, accentGradient, monoFontFamily, severityColors, shadowAccent, statusColors, uiFontFamily } from './tokens';
 
 interface QueuePanelProps {
   findings: Finding[];
+  allFindings: Finding[];
   currentFindingId: string;
   sortMode: QueueSortMode;
   onSortModeChange: (mode: QueueSortMode) => void;
   statusFilter: QueueStatusFilter;
   onStatusFilterChange: (filter: QueueStatusFilter) => void;
+  pathFilter: QueuePathFilter;
+  onPathFilterChange: (filter: QueuePathFilter) => void;
   selectedIds: string[];
   onToggleSelectFinding: (findingId: string) => void;
   onOpenFinding: (findingId: string) => void;
@@ -39,7 +42,7 @@ interface QueuePanelProps {
   onApplyBulkAction: (action: BulkAction) => void;
 }
 
-const rowHeight = 62;
+const rowHeight = 76;
 
 interface VirtualRowData {
   findings: Finding[];
@@ -67,11 +70,14 @@ const VirtualQueueRow = ({ index, style, data }: ListChildComponentProps<Virtual
 
 export const QueuePanel = ({
   findings,
+  allFindings,
   currentFindingId,
   sortMode,
   onSortModeChange,
   statusFilter,
   onStatusFilterChange,
+  pathFilter,
+  onPathFilterChange,
   selectedIds,
   onToggleSelectFinding,
   onOpenFinding,
@@ -82,6 +88,32 @@ export const QueuePanel = ({
 }: QueuePanelProps) => {
   const [bulkAction, setBulkAction] = useState<BulkAction>('mark_complete');
   const selectedIdSet = useMemo(() => new Set(selectedIds), [selectedIds]);
+
+  // Derive unique COA paths from all findings (unfiltered), grouped by top-level segment
+  const pathOptions = useMemo(() => {
+    const seen = new Set<string>();
+    const paths: string[] = [];
+    allFindings.forEach((f) => {
+      if (!seen.has(f.pathLabel)) {
+        seen.add(f.pathLabel);
+        paths.push(f.pathLabel);
+      }
+    });
+    return paths.sort();
+  }, [allFindings]);
+
+  // Group paths by top-level segment (BS / PL)
+  const pathGroups = useMemo(() => {
+    const groups: Record<string, string[]> = {};
+    pathOptions.forEach((path) => {
+      const segment = path.split(' > ')[0];
+      if (!groups[segment]) {
+        groups[segment] = [];
+      }
+      groups[segment].push(path);
+    });
+    return groups;
+  }, [pathOptions]);
   const listRef = useRef<FixedSizeList | null>(null);
   const rowRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const listContainerRef = useRef<HTMLDivElement | null>(null);
@@ -140,85 +172,122 @@ export const QueuePanel = ({
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 0, height: '100%' }}>
-      {/* Queue header */}
-      <Stack
-        direction="row"
-        justifyContent="space-between"
-        alignItems="center"
-        sx={{ px: 2, py: 1.5, borderBottom: '1px solid #E2E8F0' }}
-      >
-        <Box
-          sx={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 0.6,
-            border: `1px solid ${accentColor}33`,
-            bgcolor: `${accentColor}0D`,
-            borderRadius: 999,
-            px: 1.25,
-            py: 0.3,
-          }}
-        >
-          <Typography
+      {/* Queue header — two rows */}
+      <Box sx={{ px: 2, pt: 1.5, pb: 1, borderBottom: '1px solid #E2E8F0' }}>
+        {/* Row 1: Queue badge + finding count */}
+        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
+          <Box
             sx={{
-              fontFamily: monoFontFamily,
-              fontSize: 11,
-              fontWeight: 600,
-              color: accentColor,
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 0.6,
+              border: `1px solid ${accentColor}33`,
+              bgcolor: `${accentColor}0D`,
+              borderRadius: 999,
+              px: 1.25,
+              py: 0.3,
             }}
           >
-            Queue
+            <Typography
+              sx={{
+                fontFamily: monoFontFamily,
+                fontSize: 11,
+                fontWeight: 600,
+                color: accentColor,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+              }}
+            >
+              Queue
+            </Typography>
+          </Box>
+          <Typography sx={{ fontFamily: monoFontFamily, fontSize: 11, color: '#94A3B8' }}>
+            {findings.length} finding{findings.length !== 1 ? 's' : ''}
           </Typography>
-        </Box>
+        </Stack>
 
-        <Stack direction="row" alignItems="center" spacing={1}>
+        {/* Row 2: COA path filter + Status filter + Sort */}
+        <Stack direction="row" alignItems="center" spacing={0.75} flexWrap="wrap" useFlexGap>
+          <FormControl size="small">
+            <Select
+              value={pathFilter}
+              onChange={(event) => onPathFilterChange(event.target.value as QueuePathFilter)}
+              displayEmpty
+              sx={{
+                minWidth: 130,
+                height: 28,
+                fontSize: 12,
+                fontFamily: uiFontFamily,
+                bgcolor: '#FFFFFF',
+                borderRadius: 1.5,
+              }}
+            >
+              <MenuItem value="all" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>All paths</MenuItem>
+              {Object.entries(pathGroups).map(([segment, paths]) => [
+                <MenuItem
+                  key={`group-${segment}`}
+                  disabled
+                  sx={{ fontFamily: monoFontFamily, fontSize: 10, fontWeight: 700, color: accentColor, letterSpacing: '0.06em', textTransform: 'uppercase', py: 0.5, opacity: '1 !important' }}
+                >
+                  {segment}
+                </MenuItem>,
+                ...paths.map((path) => {
+                  // Show only the last two segments to keep it compact: "Operating Expenses > Depreciation"
+                  const parts = path.split(' > ');
+                  const label = parts.slice(1).join(' > ');
+                  return (
+                    <MenuItem key={path} value={path} sx={{ fontFamily: uiFontFamily, fontSize: 12, pl: 3 }}>
+                      {label}
+                    </MenuItem>
+                  );
+                }),
+              ])}
+            </Select>
+          </FormControl>
+
           <FormControl size="small">
             <Select
               value={statusFilter}
               onChange={(event) => onStatusFilterChange(event.target.value as QueueStatusFilter)}
               sx={{
                 minWidth: 110,
-                height: 32,
-                fontSize: 13,
+                height: 28,
+                fontSize: 12,
                 fontFamily: uiFontFamily,
                 bgcolor: '#FFFFFF',
                 borderRadius: 1.5,
               }}
             >
-              <MenuItem value="all">All</MenuItem>
-              <MenuItem value="draft_ai">Draft (AI)</MenuItem>
-              <MenuItem value="draft_human">Draft (Manual)</MenuItem>
-              <MenuItem value="needs_action">Needs Action</MenuItem>
-              <MenuItem value="in_review">In Review</MenuItem>
-              <MenuItem value="complete">Complete</MenuItem>
-              <MenuItem value="irrelevant">Irrelevant</MenuItem>
+              <MenuItem value="all" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>All status</MenuItem>
+              <MenuItem value="draft_ai" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>Draft (AI)</MenuItem>
+              <MenuItem value="draft_human" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>Draft (Manual)</MenuItem>
+              <MenuItem value="needs_action" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>Needs Action</MenuItem>
+              <MenuItem value="in_review" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>In Review</MenuItem>
+              <MenuItem value="complete" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>Complete</MenuItem>
+              <MenuItem value="irrelevant" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>Irrelevant</MenuItem>
             </Select>
           </FormControl>
-          <Typography sx={{ fontFamily: uiFontFamily, fontSize: 12, color: '#64748B' }}>
-            Sort
-          </Typography>
+
           <FormControl size="small">
             <Select
               value={sortMode}
               onChange={handleSortChange}
               sx={{
-                minWidth: 100,
-                height: 32,
-                fontSize: 13,
+                minWidth: 90,
+                height: 28,
+                fontSize: 12,
                 fontFamily: uiFontFamily,
                 bgcolor: '#FFFFFF',
                 borderRadius: 1.5,
               }}
             >
-              <MenuItem value="severity">Severity</MenuItem>
-              <MenuItem value="amount">Amount</MenuItem>
-              <MenuItem value="account">Account</MenuItem>
+              <MenuItem value="severity" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>Severity</MenuItem>
+              <MenuItem value="amount" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>Amount</MenuItem>
+              <MenuItem value="account" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>Account</MenuItem>
             </Select>
           </FormControl>
         </Stack>
-      </Stack>
+      </Box>
 
       {/* Queue list */}
       <Box ref={listContainerRef} sx={{ flex: 1, minHeight: 0, overflow: 'hidden', bgcolor: '#FAFAFA' }}>
@@ -401,6 +470,20 @@ const QueueItem = ({ finding, isCurrent, isSelected, onToggleSelect, onOpenFindi
       <Box sx={{ minWidth: 0 }}>
         <Typography component="p" style={titleStyles}>
           {finding.title}
+        </Typography>
+        <Typography
+          sx={{
+            fontFamily: monoFontFamily,
+            fontSize: 10,
+            color: '#94A3B8',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            opacity: isIrrelevant ? 0.5 : 1,
+            letterSpacing: '0.02em',
+          }}
+        >
+          {finding.pathLabel}
         </Typography>
         <Typography
           sx={{
