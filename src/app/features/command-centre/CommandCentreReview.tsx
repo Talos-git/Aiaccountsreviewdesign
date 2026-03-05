@@ -1,11 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Box, Drawer, useMediaQuery, useTheme } from '@mui/material';
-import { format } from 'date-fns';
 import { defaultCurrentFindingId, mockReviewData } from './mockData';
 import { FindingPanel } from './FindingPanel';
 import { QueuePanel } from './QueuePanel';
 import { ReviewPageHeader } from './ReviewPageHeader';
-import { BulkAction, Finding, FindingStatus, QueueSortMode } from './types';
+import { BulkAction, ConversationMessage, Finding, FindingStatus, QueueSortMode, QueueStatusFilter } from './types';
 import { uiFontFamily } from './tokens';
 import { useKeyboardShortcuts } from './useKeyboardShortcuts';
 
@@ -55,21 +54,31 @@ export const CommandCentreReview = () => {
   const [sortMode, setSortMode] = useState<QueueSortMode>('severity');
   const [selectedFindingIds, setSelectedFindingIds] = useState<string[]>([]);
   const [isQueueDrawerOpen, setQueueDrawerOpen] = useState(false);
-  const [lastSavedEpochById, setLastSavedEpochById] = useState<Record<string, number>>({});
+  const [activeRole, setActiveRole] = useState<'accountant' | 'bookkeeper'>('accountant');
+  const [statusFilter, setStatusFilter] = useState<QueueStatusFilter>('all');
 
-  const autosaveTimeoutByIdRef = useRef<Map<string, ReturnType<typeof window.setTimeout>>>(new Map());
-  const notesInputRef = useRef<HTMLTextAreaElement | null>(null);
+  const handleRoleChange = useCallback((role: 'accountant' | 'bookkeeper') => {
+    setActiveRole(role);
+    setStatusFilter(role === 'bookkeeper' ? 'needs_action' : 'all');
+  }, []);
 
   const sortedFindings = useMemo(() => sortFindings(findings, sortMode), [findings, sortMode]);
   const totalFindings = findings.length;
 
+  const filteredFindings = useMemo(() => {
+    if (statusFilter === 'all') {
+      return sortedFindings;
+    }
+    return sortedFindings.filter((finding) => finding.status === statusFilter);
+  }, [sortedFindings, statusFilter]);
+
   const currentFinding = useMemo(() => {
-    return sortedFindings.find((finding) => finding.id === currentFindingId) ?? sortedFindings[0];
-  }, [currentFindingId, sortedFindings]);
+    return filteredFindings.find((finding) => finding.id === currentFindingId) ?? filteredFindings[0] ?? sortedFindings[0];
+  }, [currentFindingId, filteredFindings, sortedFindings]);
 
   const currentIndex = useMemo(() => {
-    return sortedFindings.findIndex((finding) => finding.id === currentFinding.id);
-  }, [currentFinding.id, sortedFindings]);
+    return filteredFindings.findIndex((finding) => finding.id === currentFinding?.id);
+  }, [currentFinding, filteredFindings]);
 
   const selectedFindingSet = useMemo(() => new Set(selectedFindingIds), [selectedFindingIds]);
 
@@ -88,7 +97,7 @@ export const CommandCentreReview = () => {
           accumulator.low += 1;
         }
 
-        if (finding.status !== 'pending') {
+        if (finding.status === 'complete' || finding.status === 'irrelevant') {
           accumulator.reviewed += 1;
         }
 
@@ -99,8 +108,8 @@ export const CommandCentreReview = () => {
   }, [findings]);
 
   const highSeverityIds = useMemo(() => {
-    return sortedFindings.filter((finding) => finding.severity === 'high').map((finding) => finding.id);
-  }, [sortedFindings]);
+    return filteredFindings.filter((finding) => finding.severity === 'high').map((finding) => finding.id);
+  }, [filteredFindings]);
 
   const isAllHighSelected = useMemo(() => {
     return highSeverityIds.length > 0 && highSeverityIds.every((findingId) => selectedFindingSet.has(findingId));
@@ -110,73 +119,52 @@ export const CommandCentreReview = () => {
     return highSeverityIds.some((findingId) => selectedFindingSet.has(findingId)) && !isAllHighSelected;
   }, [highSeverityIds, isAllHighSelected, selectedFindingSet]);
 
-  const flushAutosave = useCallback((findingId: string) => {
-    const pendingTimeout = autosaveTimeoutByIdRef.current.get(findingId);
-    if (pendingTimeout) {
-      window.clearTimeout(pendingTimeout);
-      autosaveTimeoutByIdRef.current.delete(findingId);
-    }
-
-    setLastSavedEpochById((previous) => ({ ...previous, [findingId]: Date.now() }));
-  }, []);
-
-  const scheduleAutosave = useCallback(
-    (findingId: string) => {
-      const pendingTimeout = autosaveTimeoutByIdRef.current.get(findingId);
-      if (pendingTimeout) {
-        window.clearTimeout(pendingTimeout);
-      }
-
-      const timeout = window.setTimeout(() => {
-        autosaveTimeoutByIdRef.current.delete(findingId);
-        setLastSavedEpochById((previous) => ({ ...previous, [findingId]: Date.now() }));
-      }, 500);
-
-      autosaveTimeoutByIdRef.current.set(findingId, timeout);
-    },
-    [],
-  );
-
   const updateFindingStatus = useCallback((findingId: string, status: FindingStatus) => {
     setFindings((previous) => {
       return updateFindingList(previous, findingId, (finding) => ({ ...finding, status }));
     });
   }, []);
 
-  const updateCurrentFindingNotes = useCallback(
-    (value: string) => {
-      setFindings((previous) => {
-        return updateFindingList(previous, currentFinding.id, (finding) => ({ ...finding, notes: value }));
-      });
-      scheduleAutosave(currentFinding.id);
-    },
-    [currentFinding.id, scheduleAutosave],
-  );
+  const addMessage = useCallback((findingId: string, text: string) => {
+    const author: ConversationMessage['author'] = activeRole;
+    const newMessage: ConversationMessage = {
+      id: `msg-${findingId}-${Date.now()}`,
+      author,
+      text,
+      timestamp: Date.now(),
+    };
+
+    setFindings((previous) => {
+      return updateFindingList(previous, findingId, (finding) => ({
+        ...finding,
+        messages: [...finding.messages, newMessage],
+      }));
+    });
+  }, [activeRole]);
 
   const handleSendToBookkeeper = useCallback(() => {
-    if (currentFinding.notes.trim().length === 0) {
-      return;
-    }
-
     updateFindingStatus(currentFinding.id, 'needs_action');
-    flushAutosave(currentFinding.id);
-  }, [currentFinding.id, currentFinding.notes, flushAutosave, updateFindingStatus]);
+  }, [currentFinding.id, updateFindingStatus]);
+
+  const handleBookkeeperReply = useCallback(() => {
+    updateFindingStatus(currentFinding.id, 'in_review');
+  }, [currentFinding.id, updateFindingStatus]);
 
   const handleNext = useCallback(() => {
-    if (currentIndex < 0 || currentIndex >= sortedFindings.length - 1) {
+    if (currentIndex < 0 || currentIndex >= filteredFindings.length - 1) {
       return;
     }
 
-    setCurrentFindingId(sortedFindings[currentIndex + 1].id);
-  }, [currentIndex, sortedFindings]);
+    setCurrentFindingId(filteredFindings[currentIndex + 1].id);
+  }, [currentIndex, filteredFindings]);
 
   const handlePrev = useCallback(() => {
     if (currentIndex <= 0) {
       return;
     }
 
-    setCurrentFindingId(sortedFindings[currentIndex - 1].id);
-  }, [currentIndex, sortedFindings]);
+    setCurrentFindingId(filteredFindings[currentIndex - 1].id);
+  }, [currentIndex, filteredFindings]);
 
   const handleToggleSelectFinding = useCallback((findingId: string) => {
     setSelectedFindingIds((previous) => {
@@ -225,47 +213,31 @@ export const CommandCentreReview = () => {
     setSelectedFindingIds([]);
   }, [selectedFindingIds]);
 
-  const focusNotes = useCallback(() => {
-    notesInputRef.current?.focus();
-  }, []);
-
   useKeyboardShortcuts({
     onNext: handleNext,
     onPrev: handlePrev,
     onMarkIrrelevant: () => updateFindingStatus(currentFinding.id, 'irrelevant'),
     onMarkComplete: () => updateFindingStatus(currentFinding.id, 'complete'),
-    onFocusNotes: focusNotes,
   });
 
   useEffect(() => {
-    if (sortedFindings.length === 0) {
+    if (filteredFindings.length === 0) {
       return;
     }
 
-    if (!sortedFindings.some((finding) => finding.id === currentFindingId)) {
-      setCurrentFindingId(sortedFindings[0].id);
+    if (!filteredFindings.some((finding) => finding.id === currentFindingId)) {
+      setCurrentFindingId(filteredFindings[0].id);
     }
-  }, [currentFindingId, sortedFindings]);
-
-  useEffect(() => {
-    return () => {
-      autosaveTimeoutByIdRef.current.forEach((timeoutId) => {
-        window.clearTimeout(timeoutId);
-      });
-      autosaveTimeoutByIdRef.current.clear();
-    };
-  }, []);
-
-  const lastSavedLabel = lastSavedEpochById[currentFinding.id]
-    ? `Autosaved at ${format(new Date(lastSavedEpochById[currentFinding.id]), 'HH:mm:ss')}`
-    : 'Autosave pending';
+  }, [currentFindingId, filteredFindings]);
 
   const queuePanel = (
     <QueuePanel
-      findings={sortedFindings}
-      currentFindingId={currentFinding.id}
+      findings={filteredFindings}
+      currentFindingId={currentFinding?.id ?? ''}
       sortMode={sortMode}
       onSortModeChange={setSortMode}
+      statusFilter={statusFilter}
+      onStatusFilterChange={setStatusFilter}
       selectedIds={selectedFindingIds}
       onToggleSelectFinding={handleToggleSelectFinding}
       onOpenFinding={(findingId) => {
@@ -280,6 +252,10 @@ export const CommandCentreReview = () => {
       onApplyBulkAction={handleApplyBulkAction}
     />
   );
+
+  if (!currentFinding) {
+    return null;
+  }
 
   return (
     <Box
@@ -307,21 +283,22 @@ export const CommandCentreReview = () => {
             lowCount={counts.low}
             isMobile={isMobile}
             onOpenQueue={() => setQueueDrawerOpen(true)}
+            activeRole={activeRole}
+            onRoleChange={handleRoleChange}
           />
           <FindingPanel
             finding={currentFinding}
             findingIndex={Math.max(currentIndex, 0)}
-            totalFindings={sortedFindings.length}
-            notesInputRef={notesInputRef}
+            totalFindings={filteredFindings.length}
+            activeRole={activeRole}
             onMarkStatus={(status) => updateFindingStatus(currentFinding.id, status)}
-            onNotesChange={updateCurrentFindingNotes}
-            onNotesBlur={() => flushAutosave(currentFinding.id)}
+            onAddMessage={(text) => addMessage(currentFinding.id, text)}
             onSendToBookkeeper={handleSendToBookkeeper}
+            onBookkeeperReply={handleBookkeeperReply}
             canGoPrev={currentIndex > 0}
-            canGoNext={currentIndex >= 0 && currentIndex < sortedFindings.length - 1}
+            canGoNext={currentIndex >= 0 && currentIndex < filteredFindings.length - 1}
             onPrev={handlePrev}
             onNext={handleNext}
-            lastSavedLabel={lastSavedLabel}
           />
         </Box>
 

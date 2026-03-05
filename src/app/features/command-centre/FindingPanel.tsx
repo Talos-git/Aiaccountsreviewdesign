@@ -1,31 +1,29 @@
-import { RefObject } from 'react';
 import {
   Box,
   Button,
   Chip,
   Divider,
   Stack,
-  TextField,
   Typography,
 } from '@mui/material';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
-import { Finding, FindingStatus } from './types';
-import { accentColor, accentGradient, assertionColors, displayFontFamily, monoFontFamily, severityColors, shadowAccentLg, sourceColors, statusColors, uiFontFamily } from './tokens';
+import { ConversationMessage, Finding, FindingStatus } from './types';
+import { accentColor, accentGradient, assertionColors, displayFontFamily, monoFontFamily, roleColors, severityColors, shadowAccentLg, sourceColors, statusColors, uiFontFamily } from './tokens';
+import { ConversationThread } from './ConversationThread';
 
 interface FindingPanelProps {
   finding: Finding;
   findingIndex: number;
   totalFindings: number;
-  notesInputRef: RefObject<HTMLTextAreaElement | null>;
+  activeRole: 'accountant' | 'bookkeeper';
   onMarkStatus: (status: FindingStatus) => void;
-  onNotesChange: (value: string) => void;
-  onNotesBlur: () => void;
+  onAddMessage: (text: string) => void;
   onSendToBookkeeper: () => void;
+  onBookkeeperReply: () => void;
   canGoPrev: boolean;
   canGoNext: boolean;
   onPrev: () => void;
   onNext: () => void;
-  lastSavedLabel: string;
 }
 
 const toTitleCase = (value: string): string => {
@@ -36,20 +34,25 @@ export const FindingPanel = ({
   finding,
   findingIndex,
   totalFindings,
-  notesInputRef,
+  activeRole,
   onMarkStatus,
-  onNotesChange,
-  onNotesBlur,
+  onAddMessage,
   onSendToBookkeeper,
+  onBookkeeperReply,
   canGoPrev,
   canGoNext,
   onPrev,
   onNext,
-  lastSavedLabel,
 }: FindingPanelProps) => {
   const severityLabel = toTitleCase(finding.severity);
   const sourceLabel = finding.source === 'ai' ? 'AI' : 'Code';
   const isAiSource = finding.source === 'ai';
+
+  const handleSendMessage = (text: string) => {
+    onAddMessage(text);
+  };
+
+  const hasMessages = finding.messages.length > 0;
 
   return (
     <Box
@@ -116,7 +119,7 @@ export const FindingPanel = ({
             }}
           />
           <Chip
-            label={`Status: ${finding.status.replace('_', ' ')}`}
+            label={`Status: ${finding.status.replace(/_/g, ' ')}`}
             size="small"
             sx={{
               bgcolor: `${statusColors[finding.status]}1A`,
@@ -205,121 +208,145 @@ export const FindingPanel = ({
           </Typography>
         </Box>
 
-        {/* Notes */}
-        <Typography sx={{ fontFamily: uiFontFamily, fontSize: 14, fontWeight: 600, color: '#0F172A', mb: 0.75 }}>
-          Notes
-        </Typography>
-        <TextField
-          inputRef={notesInputRef}
-          multiline
-          minRows={5}
-          fullWidth
-          placeholder="Add accountant context before sending to bookkeeper"
-          value={finding.notes}
-          onChange={(event) => onNotesChange(event.target.value)}
-          onBlur={onNotesBlur}
-          sx={{
-            mb: 1,
-            '& .MuiOutlinedInput-root': {
-              borderRadius: 2,
-              fontFamily: uiFontFamily,
-              bgcolor: '#FFFFFF',
-              '& textarea': {
-                fontFamily: uiFontFamily,
-                fontSize: 14,
-                color: '#0F172A',
-                '&::placeholder': {
-                  color: '#94A3B8',
-                  opacity: 1,
-                },
-              },
-              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                borderColor: accentColor,
-                borderWidth: 2,
-              },
-            },
-          }}
-        />
-
-        <Typography sx={{ fontFamily: uiFontFamily, fontSize: 12, color: '#64748B', mb: 2 }}>
-          {lastSavedLabel}
-        </Typography>
-
-        {/* Action buttons */}
-        <Stack direction="row" spacing={1.25} sx={{ mb: 1.25 }}>
-          <Button
-            fullWidth
-            variant="outlined"
-            onClick={() => onMarkStatus('irrelevant')}
+        {/* Conversation thread */}
+        <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
+          <Typography sx={{ fontFamily: uiFontFamily, fontSize: 14, fontWeight: 600, color: '#0F172A' }}>
+            Thread
+          </Typography>
+          <Box
             sx={{
-              textTransform: 'none',
-              borderColor: '#CBD5E1',
-              color: '#475569',
-              fontFamily: uiFontFamily,
-              fontWeight: 600,
-              py: 1,
-              borderRadius: 2,
-              transition: 'all 180ms ease',
-              '&:hover': {
-                borderColor: `${accentColor}55`,
-                color: '#334155',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                bgcolor: 'transparent',
-              },
+              display: 'inline-flex',
+              alignItems: 'center',
+              bgcolor: activeRole === 'accountant' ? `${roleColors.accountant}12` : `${roleColors.bookkeeper}12`,
+              border: `1px solid ${activeRole === 'accountant' ? roleColors.accountant : roleColors.bookkeeper}30`,
+              borderRadius: 999,
+              px: 1,
+              py: 0.2,
             }}
           >
-            Irrelevant
-          </Button>
+            <Typography
+              sx={{
+                fontFamily: monoFontFamily,
+                fontSize: 10,
+                fontWeight: 700,
+                color: activeRole === 'accountant' ? roleColors.accountant : roleColors.bookkeeper,
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+              }}
+            >
+              {activeRole === 'accountant' ? 'Accountant' : 'Bookkeeper'}
+            </Typography>
+          </Box>
+        </Stack>
+
+        <ConversationThread
+          messages={finding.messages}
+          activeRole={activeRole}
+          onSendMessage={handleSendMessage}
+        />
+
+        {/* Action buttons */}
+        {activeRole === 'accountant' ? (
+          <>
+            <Stack direction="row" spacing={1.25} sx={{ mt: 1.5, mb: 1.25 }}>
+              <Button
+                fullWidth
+                variant="outlined"
+                onClick={() => onMarkStatus('irrelevant')}
+                sx={{
+                  textTransform: 'none',
+                  borderColor: '#CBD5E1',
+                  color: '#475569',
+                  fontFamily: uiFontFamily,
+                  fontWeight: 600,
+                  py: 1,
+                  borderRadius: 2,
+                  transition: 'all 180ms ease',
+                  '&:hover': {
+                    borderColor: `${accentColor}55`,
+                    color: '#334155',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                    bgcolor: 'transparent',
+                  },
+                }}
+              >
+                Irrelevant
+              </Button>
+              <Button
+                fullWidth
+                variant="contained"
+                onClick={() => onMarkStatus('complete')}
+                sx={{
+                  textTransform: 'none',
+                  background: 'linear-gradient(135deg, #16A34A, #22C55E)',
+                  color: '#FFFFFF',
+                  fontFamily: uiFontFamily,
+                  fontWeight: 600,
+                  py: 1,
+                  borderRadius: 2,
+                  boxShadow: 'none',
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #15803D, #16A34A)',
+                    boxShadow: '0 4px 12px rgba(34,197,94,0.3)',
+                  },
+                }}
+              >
+                Complete
+              </Button>
+            </Stack>
+
+            <Button
+              fullWidth
+              variant="contained"
+              disabled={!hasMessages}
+              onClick={onSendToBookkeeper}
+              sx={{
+                textTransform: 'none',
+                fontFamily: uiFontFamily,
+                fontWeight: 600,
+                borderRadius: 2,
+                py: 1,
+                background: accentGradient,
+                boxShadow: 'none',
+                transition: 'all 180ms ease',
+                '&:hover': {
+                  background: accentGradient,
+                  boxShadow: shadowAccentLg,
+                },
+                '&.Mui-disabled': {
+                  bgcolor: '#E2E8F0',
+                  background: 'none',
+                  color: '#94A3B8',
+                },
+              }}
+            >
+              Send to Bookkeeper
+            </Button>
+          </>
+        ) : (
           <Button
             fullWidth
             variant="contained"
-            onClick={() => onMarkStatus('complete')}
+            onClick={onBookkeeperReply}
             sx={{
+              mt: 1.5,
               textTransform: 'none',
-              background: 'linear-gradient(135deg, #16A34A, #22C55E)',
-              color: '#FFFFFF',
               fontFamily: uiFontFamily,
               fontWeight: 600,
-              py: 1,
               borderRadius: 2,
+              py: 1,
+              background: `linear-gradient(135deg, #7C3AED, #9F5FF1)`,
               boxShadow: 'none',
+              transition: 'all 180ms ease',
               '&:hover': {
-                background: 'linear-gradient(135deg, #15803D, #16A34A)',
-                boxShadow: '0 4px 12px rgba(34,197,94,0.3)',
+                background: `linear-gradient(135deg, #6D28D9, #7C3AED)`,
+                boxShadow: '0 8px 24px rgba(124,58,237,0.35)',
               },
             }}
           >
-            Complete
+            Send to Accountant
           </Button>
-        </Stack>
-
-        <Button
-          fullWidth
-          variant="contained"
-          disabled={finding.notes.trim().length === 0}
-          onClick={onSendToBookkeeper}
-          sx={{
-            textTransform: 'none',
-            fontFamily: uiFontFamily,
-            fontWeight: 600,
-            borderRadius: 2,
-            py: 1,
-            background: accentGradient,
-            boxShadow: 'none',
-            transition: 'all 180ms ease',
-            '&:hover': {
-              background: accentGradient,
-              boxShadow: shadowAccentLg,
-            },
-            '&.Mui-disabled': {
-              bgcolor: '#E2E8F0',
-              background: 'none',
-              color: '#94A3B8',
-            },
-          }}
-        >
-          Send to Bookkeeper
-        </Button>
+        )}
       </Box>
 
       <Divider />
@@ -353,7 +380,7 @@ export const FindingPanel = ({
               justifyContent: 'center',
             }}
           >
-            {['J/K nav', 'I irrelevant', 'C complete', 'N note'].map((shortcut) => (
+            {['J/K nav', 'I irrelevant', 'C complete'].map((shortcut) => (
               <Box
                 key={shortcut}
                 sx={{

@@ -5,7 +5,6 @@ interface KeyboardShortcutHandlers {
   onPrev: () => void;
   onMarkIrrelevant: () => void;
   onMarkComplete: () => void;
-  onFocusNotes: () => void;
 }
 
 const isTypingTarget = (target: EventTarget | null): boolean => {
@@ -26,7 +25,6 @@ export const useKeyboardShortcuts = ({
   onPrev,
   onMarkIrrelevant,
   onMarkComplete,
-  onFocusNotes,
 }: KeyboardShortcutHandlers): void => {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -61,12 +59,6 @@ export const useKeyboardShortcuts = ({
       if (key === 'c') {
         event.preventDefault();
         onMarkComplete();
-        return;
-      }
-
-      if (key === 'n') {
-        event.preventDefault();
-        onFocusNotes();
       }
     };
 
@@ -75,5 +67,5 @@ export const useKeyboardShortcuts = ({
     return () => {
       window.removeEventListener('keydown', onKeyDown);
     };
-  }, [onFocusNotes, onMarkComplete, onMarkIrrelevant, onNext, onPrev]);
+  }, [onMarkComplete, onMarkIrrelevant, onNext, onPrev]);
 };

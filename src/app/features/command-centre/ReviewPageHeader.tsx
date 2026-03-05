@@ -2,7 +2,7 @@ import { format } from 'date-fns';
 import { Box, Button, LinearProgress, Stack, Typography } from '@mui/material';
 import { Menu as MenuIcon } from '@mui/icons-material';
 import { ReviewMeta } from './types';
-import { accentColor, accentGradient, accentSecondary, displayFontFamily, monoFontFamily, severityColors, shadowMd, uiFontFamily } from './tokens';
+import { accentColor, accentGradient, accentSecondary, displayFontFamily, monoFontFamily, roleColors, severityColors, shadowMd, uiFontFamily } from './tokens';
 
 interface ReviewPageHeaderProps {
   meta: ReviewMeta;
@@ -13,6 +13,8 @@ interface ReviewPageHeaderProps {
   lowCount: number;
   isMobile: boolean;
   onOpenQueue: () => void;
+  activeRole: 'accountant' | 'bookkeeper';
+  onRoleChange: (role: 'accountant' | 'bookkeeper') => void;
 }
 
 interface StatTileProps {
@@ -71,6 +73,8 @@ export const ReviewPageHeader = ({
   lowCount,
   isMobile,
   onOpenQueue,
+  activeRole,
+  onRoleChange,
 }: ReviewPageHeaderProps) => {
   const progressPercent = totalFindings === 0 ? 0 : Math.round((reviewedCount / totalFindings) * 100);
 
@@ -165,6 +169,48 @@ export const ReviewPageHeader = ({
         </Box>
 
         <Stack direction="row" alignItems="center" spacing={1.5}>
+          {/* Role switcher */}
+          <Box
+            sx={{
+              display: 'flex',
+              border: '1px solid #E2E8F0',
+              borderRadius: 999,
+              overflow: 'hidden',
+              bgcolor: '#F8FAFC',
+            }}
+          >
+            {(['accountant', 'bookkeeper'] as const).map((role) => {
+              const isActive = activeRole === role;
+              const color = roleColors[role];
+              return (
+                <Button
+                  key={role}
+                  size="small"
+                  onClick={() => onRoleChange(role)}
+                  sx={{
+                    textTransform: 'none',
+                    fontFamily: uiFontFamily,
+                    fontWeight: 600,
+                    fontSize: 12,
+                    px: 1.5,
+                    py: 0.5,
+                    borderRadius: 0,
+                    minWidth: 0,
+                    color: isActive ? '#FFFFFF' : '#64748B',
+                    bgcolor: isActive ? color : 'transparent',
+                    transition: 'all 180ms ease',
+                    '&:hover': {
+                      bgcolor: isActive ? color : `${color}12`,
+                      color: isActive ? '#FFFFFF' : color,
+                    },
+                  }}
+                >
+                  {role === 'accountant' ? 'Accountant' : 'Bookkeeper'}
+                </Button>
+              );
+            })}
+          </Box>
+
           {isMobile ? (
             <Button
               size="small"

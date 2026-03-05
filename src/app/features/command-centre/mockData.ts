@@ -1,4 +1,4 @@
-import { Finding, FindingSeverity, FindingStatus, ReviewData } from './types';
+import { ConversationMessage, Finding, FindingSeverity, FindingStatus, ReviewData } from './types';
 
 const severityByIndex = (index: number): FindingSeverity => {
   if (index < 12) {
@@ -136,7 +136,7 @@ const initialReviewedIndices = new Set([0, 1, 5, 8, 11, 14, 19, 25, 30, 34, 40, 
 
 const statusForIndex = (index: number): FindingStatus => {
   if (!initialReviewedIndices.has(index)) {
-    return 'pending';
+    return 'draft_ai';
   }
 
   return index % 2 === 0 ? 'irrelevant' : 'complete';
@@ -150,11 +150,70 @@ const formatAmount = (amount: number): string => {
   }).format(amount);
 };
 
+// Pre-seeded conversations for first 5 findings
+const BASE_TIME = 1725000000000; // ~Aug 2024
+
+const aiNote = (id: string, text: string): ConversationMessage => ({
+  id,
+  author: 'ai',
+  text,
+  timestamp: BASE_TIME,
+});
+
+const accountantMsg = (id: string, text: string, offsetMs = 3600000): ConversationMessage => ({
+  id,
+  author: 'accountant',
+  text,
+  timestamp: BASE_TIME + offsetMs,
+});
+
+const bookkeeperMsg = (id: string, text: string, offsetMs = 7200000): ConversationMessage => ({
+  id,
+  author: 'bookkeeper',
+  text,
+  timestamp: BASE_TIME + offsetMs,
+});
+
+const seededMessages: Record<number, ConversationMessage[]> = {
+  0: [
+    aiNote('msg-0-1', 'AR aging report shows $12,400 discrepancy against GL balance. Three invoices (INV-2241, INV-2289) appear duplicated in the sub-ledger. Recommend reconciling aging buckets and reversing duplicate entries.'),
+  ],
+  1: [
+    aiNote('msg-1-1', 'Revenue of $9,800 posted under JE-1194 lacks supporting invoice. SO-2081 references a delivery not yet completed. This appears to be premature revenue recognition.'),
+    accountantMsg('msg-1-2', 'Confirmed — client acknowledged the invoice was posted in error. Please reverse JE-1194 and hold until invoice pack is received from the customer. Expected by end of week.'),
+  ],
+  2: [
+    aiNote('msg-2-1', 'INV-2241 has been posted twice: once in Jul and again in Sep under AR-ROLL-2024Q3. The duplicate creates a $12,400 overstatement in current AR balance.'),
+    accountantMsg('msg-2-2', 'Please void the Sep entry and re-run the AR rollforward. Note the original Jul entry is correct and should remain.'),
+    bookkeeperMsg('msg-2-3', 'Done — Sep entry voided under JE-1301. AR rollforward re-run and balance now agrees to aging report. Attaching updated reconciliation.'),
+  ],
+  3: [
+    aiNote('msg-3-1', 'Depreciation schedule shows useful life of 5 years for Asset Group B, but fixed asset register records 7 years. This creates a $6,400 annual overstatement of depreciation expense.'),
+    accountantMsg('msg-3-2', 'The 7-year life is correct per the original purchase agreement. Please update the depreciation schedule to match FAR and rerun for the quarter.'),
+    bookkeeperMsg('msg-3-3', 'Updated DEP-SCHED-09 to reflect 7-year life. Depreciation rerun — quarterly charge reduced by $1,600. Journal adjustment posted as JE-1308.'),
+    accountantMsg('msg-3-4', 'Reviewed JE-1308 — looks correct. However please also update the comparative period in the working papers so the prior quarter disclosure is consistent.'),
+  ],
+  4: [
+    aiNote('msg-4-1', 'Prepaid insurance balance of $5,200 has not been amortised for Jul-Sep 2024. Monthly amortisation of approximately $433 should have been posted each month.'),
+  ],
+};
+
+const seededStatuses: Record<number, FindingStatus> = {
+  1: 'needs_action',
+  2: 'in_review',
+  3: 'needs_action',
+  4: 'draft_human',
+};
+
 const buildFinding = (index: number): Finding => {
   const template = templates[index % templates.length];
   const assertion = assertionCycle[index % assertionCycle.length];
   const accountLabel = accountPool[index % accountPool.length];
   const adjustedAmount = template.amount + Math.round(index * 63.4);
+
+  const baseStatus = statusForIndex(index);
+  const status = seededStatuses[index] ?? baseStatus;
+  const messages: ConversationMessage[] = seededMessages[index] ?? [];
 
   return {
     id: `finding-${index + 1}`,
@@ -163,15 +222,15 @@ const buildFinding = (index: number): Finding => {
     assertion,
     assertionLabel: assertionLabelByType[assertion],
     pathLabel: pathByAccount[accountLabel],
-    source: template.source,
+    source: index === 4 ? 'code' : template.source,
     amount: adjustedAmount,
     amountLabel: formatAmount(adjustedAmount),
     accountLabel,
     periodLabel: 'Jul-Sep 2024',
     fixLabel: template.fixLabel,
     supportingRefs: template.refs,
-    status: statusForIndex(index),
-    notes: index === 1 ? 'Waiting invoice confirmation from client.' : '',
+    status,
+    messages,
   };
 };
 

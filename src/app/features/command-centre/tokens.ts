@@ -12,10 +12,17 @@ export const sourceColors: Record<FindingSource, string> = {
 };
 
 export const statusColors: Record<FindingStatus, string> = {
-  pending: '#9CA3AF',
+  draft_ai: '#9CA3AF',
+  draft_human: '#60A5FA',
+  needs_action: '#F59E0B',
+  in_review: '#8B5CF6',
   complete: '#22C55E',
   irrelevant: '#6B7280',
-  needs_action: '#F59E0B',
+};
+
+export const roleColors = {
+  accountant: '#0052FF',
+  bookkeeper: '#7C3AED',
 };
 
 export const assertionColors: Record<string, string> = {

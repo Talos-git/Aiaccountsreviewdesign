@@ -13,12 +13,14 @@ import {
 } from '@mui/material';
 import {
   CheckCircle,
+  HourglassEmpty,
   PlayArrow,
   RadioButtonUnchecked,
   RemoveCircleOutline,
+  SwapHoriz,
 } from '@mui/icons-material';
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
-import { BulkAction, Finding, QueueSortMode } from './types';
+import { BulkAction, Finding, QueueSortMode, QueueStatusFilter } from './types';
 import { accentColor, accentGradient, monoFontFamily, severityColors, shadowAccent, statusColors, uiFontFamily } from './tokens';
 
 interface QueuePanelProps {
@@ -26,6 +28,8 @@ interface QueuePanelProps {
   currentFindingId: string;
   sortMode: QueueSortMode;
   onSortModeChange: (mode: QueueSortMode) => void;
+  statusFilter: QueueStatusFilter;
+  onStatusFilterChange: (filter: QueueStatusFilter) => void;
   selectedIds: string[];
   onToggleSelectFinding: (findingId: string) => void;
   onOpenFinding: (findingId: string) => void;
@@ -66,6 +70,8 @@ export const QueuePanel = ({
   currentFindingId,
   sortMode,
   onSortModeChange,
+  statusFilter,
+  onStatusFilterChange,
   selectedIds,
   onToggleSelectFinding,
   onOpenFinding,
@@ -168,6 +174,28 @@ export const QueuePanel = ({
         </Box>
 
         <Stack direction="row" alignItems="center" spacing={1}>
+          <FormControl size="small">
+            <Select
+              value={statusFilter}
+              onChange={(event) => onStatusFilterChange(event.target.value as QueueStatusFilter)}
+              sx={{
+                minWidth: 110,
+                height: 32,
+                fontSize: 13,
+                fontFamily: uiFontFamily,
+                bgcolor: '#FFFFFF',
+                borderRadius: 1.5,
+              }}
+            >
+              <MenuItem value="all">All</MenuItem>
+              <MenuItem value="draft_ai">Draft (AI)</MenuItem>
+              <MenuItem value="draft_human">Draft (Manual)</MenuItem>
+              <MenuItem value="needs_action">Needs Action</MenuItem>
+              <MenuItem value="in_review">In Review</MenuItem>
+              <MenuItem value="complete">Complete</MenuItem>
+              <MenuItem value="irrelevant">Irrelevant</MenuItem>
+            </Select>
+          </FormControl>
           <Typography sx={{ fontFamily: uiFontFamily, fontSize: 12, color: '#64748B' }}>
             Sort
           </Typography>
@@ -176,7 +204,7 @@ export const QueuePanel = ({
               value={sortMode}
               onChange={handleSortChange}
               sx={{
-                minWidth: 128,
+                minWidth: 100,
                 height: 32,
                 fontSize: 13,
                 fontFamily: uiFontFamily,
@@ -406,9 +434,17 @@ const StatusGlyph = ({ status, isCurrent }: StatusGlyphProps) => {
     return <RemoveCircleOutline sx={{ fontSize: 18, color: statusColors.irrelevant }} />;
   }
 
+  if (status === 'needs_action') {
+    return <HourglassEmpty sx={{ fontSize: 17, color: statusColors.needs_action }} />;
+  }
+
+  if (status === 'in_review') {
+    return <SwapHoriz sx={{ fontSize: 18, color: statusColors.in_review }} />;
+  }
+
   if (isCurrent) {
     return <PlayArrow sx={{ fontSize: 18, color: accentColor }} />;
   }
 
-  return <RadioButtonUnchecked sx={{ fontSize: 17, color: statusColors.pending }} />;
+  return <RadioButtonUnchecked sx={{ fontSize: 17, color: statusColors.draft_ai }} />;
 };

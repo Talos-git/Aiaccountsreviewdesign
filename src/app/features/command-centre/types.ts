@@ -1,6 +1,6 @@
 export type FindingSeverity = 'high' | 'medium' | 'low';
 
-export type FindingStatus = 'pending' | 'complete' | 'irrelevant' | 'needs_action';
+export type FindingStatus = 'draft_ai' | 'draft_human' | 'needs_action' | 'in_review' | 'complete' | 'irrelevant';
 
 export type FindingSource = 'ai' | 'code';
 
@@ -8,7 +8,18 @@ export type AssertionType = 'C' | 'E' | 'A';
 
 export type QueueSortMode = 'severity' | 'amount' | 'account';
 
+export type QueueStatusFilter = 'all' | FindingStatus;
+
 export type BulkAction = 'mark_irrelevant' | 'mark_complete';
+
+export type MessageAuthor = 'ai' | 'accountant' | 'bookkeeper';
+
+export interface ConversationMessage {
+  id: string;
+  author: MessageAuthor;
+  text: string;
+  timestamp: number;
+}
 
 export interface ReviewMeta {
   reviewId: string;
@@ -33,7 +44,7 @@ export interface Finding {
   fixLabel: string;
   supportingRefs: string[];
   status: FindingStatus;
-  notes: string;
+  messages: ConversationMessage[];
 }
 
 export interface ReviewData {
