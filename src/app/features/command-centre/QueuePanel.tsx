@@ -19,7 +19,7 @@ import {
 } from '@mui/icons-material';
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
 import { BulkAction, Finding, QueueSortMode } from './types';
-import { baseFontFamily, severityColors, statusColors } from './tokens';
+import { accentColor, accentGradient, monoFontFamily, severityColors, shadowAccent, statusColors, uiFontFamily } from './tokens';
 
 interface QueuePanelProps {
   findings: Finding[];
@@ -134,27 +134,41 @@ export const QueuePanel = ({
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: 0, height: '100%' }}>
+      {/* Queue header */}
       <Stack
         direction="row"
         justifyContent="space-between"
         alignItems="center"
-        sx={{ px: 2, py: 1.5, borderBottom: '1px solid #D8E2F1' }}
+        sx={{ px: 2, py: 1.5, borderBottom: '1px solid #E2E8F0' }}
       >
-        <Typography
+        <Box
           sx={{
-            fontFamily: baseFontFamily,
-            fontSize: 13,
-            fontWeight: 800,
-            color: '#0F172A',
-            letterSpacing: '0.06em',
-            textTransform: 'uppercase',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 0.6,
+            border: `1px solid ${accentColor}33`,
+            bgcolor: `${accentColor}0D`,
+            borderRadius: 999,
+            px: 1.25,
+            py: 0.3,
           }}
         >
-          Queue
-        </Typography>
+          <Typography
+            sx={{
+              fontFamily: monoFontFamily,
+              fontSize: 11,
+              fontWeight: 600,
+              color: accentColor,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+            }}
+          >
+            Queue
+          </Typography>
+        </Box>
 
         <Stack direction="row" alignItems="center" spacing={1}>
-          <Typography sx={{ fontFamily: baseFontFamily, fontSize: 12, color: '#64748B' }}>
+          <Typography sx={{ fontFamily: uiFontFamily, fontSize: 12, color: '#64748B' }}>
             Sort
           </Typography>
           <FormControl size="small">
@@ -165,7 +179,7 @@ export const QueuePanel = ({
                 minWidth: 128,
                 height: 32,
                 fontSize: 13,
-                fontFamily: baseFontFamily,
+                fontFamily: uiFontFamily,
                 bgcolor: '#FFFFFF',
                 borderRadius: 1.5,
               }}
@@ -178,7 +192,8 @@ export const QueuePanel = ({
         </Stack>
       </Stack>
 
-      <Box ref={listContainerRef} sx={{ flex: 1, minHeight: 0, overflow: 'hidden', bgcolor: '#F8FAFD' }}>
+      {/* Queue list */}
+      <Box ref={listContainerRef} sx={{ flex: 1, minHeight: 0, overflow: 'hidden', bgcolor: '#FAFAFA' }}>
         {useVirtualization ? (
           <FixedSizeList
             ref={listRef}
@@ -216,6 +231,7 @@ export const QueuePanel = ({
 
       <Divider />
 
+      {/* Bulk action footer */}
       <Box sx={{ px: 2, py: 1.25, bgcolor: '#FFFFFF' }}>
         <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
           <Checkbox
@@ -223,10 +239,17 @@ export const QueuePanel = ({
             checked={isAllHighSelected}
             indeterminate={isHighIndeterminate}
             onChange={onToggleSelectAllHigh}
-            sx={{ p: 0.4 }}
+            sx={{
+              p: 0.4,
+              color: '#CBD5E1',
+              '&.Mui-checked, &.MuiCheckbox-indeterminate': { color: accentColor },
+            }}
           />
-          <Typography sx={{ fontFamily: baseFontFamily, fontSize: 12, color: '#334155', fontWeight: 600 }}>
-            Select all HIGH
+          <Typography sx={{ fontFamily: uiFontFamily, fontSize: 12, color: '#0F172A', fontWeight: 600 }}>
+            Select all{' '}
+            <Box component="span" sx={{ color: '#EF4444', fontWeight: 700 }}>
+              HIGH
+            </Box>
           </Typography>
         </Stack>
 
@@ -238,7 +261,7 @@ export const QueuePanel = ({
               sx={{
                 height: 34,
                 fontSize: 13,
-                fontFamily: baseFontFamily,
+                fontFamily: uiFontFamily,
                 bgcolor: '#FFFFFF',
                 borderRadius: 1.5,
               }}
@@ -254,13 +277,21 @@ export const QueuePanel = ({
             disabled={selectedIds.length === 0}
             sx={{
               textTransform: 'none',
-              fontFamily: baseFontFamily,
+              fontFamily: uiFontFamily,
               fontWeight: 700,
               borderRadius: 1.5,
               whiteSpace: 'nowrap',
-              bgcolor: '#0F172A',
+              background: accentGradient,
+              boxShadow: 'none',
+              transition: 'all 180ms ease',
               '&:hover': {
-                bgcolor: '#020617',
+                background: accentGradient,
+                boxShadow: shadowAccent,
+              },
+              '&.Mui-disabled': {
+                background: 'none',
+                bgcolor: '#E2E8F0',
+                color: '#94A3B8',
               },
             }}
           >
@@ -281,15 +312,18 @@ interface QueueItemProps {
 }
 
 const QueueItem = ({ finding, isCurrent, isSelected, onToggleSelect, onOpenFinding }: QueueItemProps) => {
+  const isIrrelevant = finding.status === 'irrelevant';
+
   const titleStyles: CSSProperties = {
-    fontFamily: baseFontFamily,
+    fontFamily: uiFontFamily,
     fontSize: 13,
     fontWeight: isCurrent ? 700 : 600,
-    color: finding.status === 'irrelevant' ? '#94A3B8' : '#0F172A',
+    color: isIrrelevant ? '#94A3B8' : '#0F172A',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
-    textDecoration: finding.status === 'irrelevant' ? 'line-through' : 'none',
+    textDecoration: isIrrelevant ? 'line-through' : 'none',
+    opacity: isIrrelevant ? 0.5 : 1,
   };
 
   return (
@@ -304,10 +338,12 @@ const QueueItem = ({ finding, isCurrent, isSelected, onToggleSelect, onOpenFindi
         py: 1.1,
         cursor: 'pointer',
         borderBottom: '1px solid #E2E8F0',
-        bgcolor: isCurrent ? '#EAF2FF' : '#FFFFFF',
-        transition: 'background-color 180ms ease',
+        borderLeft: isCurrent ? `3px solid ${accentColor}` : '3px solid transparent',
+        bgcolor: isCurrent ? `rgba(0,82,255,0.06)` : '#FFFFFF',
+        transition: 'all 180ms ease',
         '&:hover': {
-          bgcolor: isCurrent ? '#E2EDFF' : '#F8FAFC',
+          bgcolor: isCurrent ? `rgba(0,82,255,0.09)` : '#F8FAFC',
+          boxShadow: isCurrent ? '0 2px 8px rgba(0,82,255,0.1)' : 'none',
         },
       }}
     >
@@ -316,15 +352,19 @@ const QueueItem = ({ finding, isCurrent, isSelected, onToggleSelect, onOpenFindi
         checked={isSelected}
         onClick={(event) => event.stopPropagation()}
         onChange={() => onToggleSelect(finding.id)}
-        sx={{ p: 0.4 }}
+        sx={{
+          p: 0.4,
+          color: '#CBD5E1',
+          '&.Mui-checked': { color: accentColor },
+        }}
       />
 
       <StatusGlyph status={finding.status} isCurrent={isCurrent} />
 
       <Box
         sx={{
-          width: 9,
-          height: 9,
+          width: 10,
+          height: 10,
           borderRadius: '50%',
           bgcolor: severityColors[finding.severity],
         }}
@@ -336,12 +376,13 @@ const QueueItem = ({ finding, isCurrent, isSelected, onToggleSelect, onOpenFindi
         </Typography>
         <Typography
           sx={{
-            fontFamily: baseFontFamily,
-            fontSize: 12,
-            color: '#64748B',
+            fontFamily: monoFontFamily,
+            fontSize: 11,
+            color: isCurrent ? accentColor : '#64748B',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
+            opacity: isIrrelevant ? 0.5 : 1,
           }}
         >
           {finding.amountLabel}
@@ -366,7 +407,7 @@ const StatusGlyph = ({ status, isCurrent }: StatusGlyphProps) => {
   }
 
   if (isCurrent) {
-    return <PlayArrow sx={{ fontSize: 18, color: statusColors.needs_action }} />;
+    return <PlayArrow sx={{ fontSize: 18, color: accentColor }} />;
   }
 
   return <RadioButtonUnchecked sx={{ fontSize: 17, color: statusColors.pending }} />;

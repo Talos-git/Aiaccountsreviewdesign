@@ -2,7 +2,7 @@ import { format } from 'date-fns';
 import { Box, Button, LinearProgress, Stack, Typography } from '@mui/material';
 import { Menu as MenuIcon } from '@mui/icons-material';
 import { ReviewMeta } from './types';
-import { baseFontFamily, severityColors } from './tokens';
+import { accentColor, accentGradient, accentSecondary, displayFontFamily, monoFontFamily, severityColors, shadowMd, uiFontFamily } from './tokens';
 
 interface ReviewPageHeaderProps {
   meta: ReviewMeta;
@@ -25,20 +25,19 @@ const StatTile = ({ value, label, valueColor = '#0F172A' }: StatTileProps) => {
   return (
     <Box
       sx={{
-        border: '1px solid #D9E3F2',
+        border: '1px solid #E2E8F0',
         borderRadius: 2,
         px: 1.5,
         py: 1.25,
         minHeight: 74,
-        bgcolor: 'rgba(255, 255, 255, 0.8)',
-        backdropFilter: 'blur(4px)',
-        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7)',
+        bgcolor: '#FFFFFF',
+        boxShadow: shadowMd,
       }}
     >
       <Typography
         sx={{
-          fontFamily: baseFontFamily,
-          fontSize: 24,
+          fontFamily: uiFontFamily,
+          fontSize: 26,
           lineHeight: 1,
           fontWeight: 700,
           color: valueColor,
@@ -49,11 +48,11 @@ const StatTile = ({ value, label, valueColor = '#0F172A' }: StatTileProps) => {
       </Typography>
       <Typography
         sx={{
-          fontFamily: baseFontFamily,
-          fontSize: 12,
+          fontFamily: monoFontFamily,
+          fontSize: 11,
           fontWeight: 600,
-          color: '#334155',
-          letterSpacing: '0.04em',
+          color: '#64748B',
+          letterSpacing: '0.08em',
           textTransform: 'uppercase',
         }}
       >
@@ -78,15 +77,11 @@ export const ReviewPageHeader = ({
   return (
     <Box
       sx={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 4,
         px: { xs: 1.5, md: 2.5 },
         pt: 1.5,
         pb: 1.25,
-        borderBottom: '1px solid #D6E0EF',
-        bgcolor: 'rgba(244, 248, 255, 0.94)',
-        backgroundImage: 'linear-gradient(120deg, rgba(255,255,255,0.7), rgba(235,243,255,0.85))',
+        borderBottom: '1px solid #E2E8F0',
+        bgcolor: 'rgba(250,250,250,0.96)',
         backdropFilter: 'blur(10px)',
       }}
     >
@@ -98,27 +93,71 @@ export const ReviewPageHeader = ({
         sx={{ mb: 1.5 }}
       >
         <Box sx={{ minWidth: 0 }}>
+          {/* Section label badge */}
+          <Box
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 0.75,
+              border: `1px solid ${accentColor}33`,
+              bgcolor: `${accentColor}0D`,
+              borderRadius: 999,
+              px: 1.25,
+              py: 0.35,
+              mb: 0.75,
+            }}
+          >
+            <Box
+              sx={{
+                width: 6,
+                height: 6,
+                borderRadius: '50%',
+                background: accentGradient,
+                flexShrink: 0,
+                '@keyframes pulse': {
+                  '0%, 100%': { opacity: 1, transform: 'scale(1)' },
+                  '50%': { opacity: 0.6, transform: 'scale(0.8)' },
+                },
+                animation: 'pulse 2s ease-in-out infinite',
+              }}
+            />
+            <Typography
+              sx={{
+                fontFamily: monoFontFamily,
+                fontSize: 10,
+                fontWeight: 600,
+                color: accentColor,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+              }}
+            >
+              AI Review
+            </Typography>
+          </Box>
+
           <Typography
             sx={{
-              fontFamily: baseFontFamily,
-              fontSize: { xs: 16, md: 18 },
-              fontWeight: 700,
+              fontFamily: displayFontFamily,
+              fontSize: { xs: 20, md: 22 },
+              fontWeight: 'normal',
               color: '#0F172A',
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
+              lineHeight: 1.2,
             }}
           >
             {meta.title}
           </Typography>
           <Typography
             sx={{
-              fontFamily: baseFontFamily,
+              fontFamily: uiFontFamily,
               fontSize: 13,
-              color: '#475569',
+              color: '#64748B',
               whiteSpace: 'nowrap',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
+              mt: 0.25,
             }}
           >
             {meta.clientName} | {meta.periodLabel} | {meta.versionLabel}
@@ -129,16 +168,20 @@ export const ReviewPageHeader = ({
           {isMobile ? (
             <Button
               size="small"
-              variant="outlined"
               onClick={onOpenQueue}
               startIcon={<MenuIcon sx={{ fontSize: 16 }} />}
               sx={{
                 textTransform: 'none',
-                fontFamily: baseFontFamily,
-                borderColor: '#C9D6EA',
-                color: '#0F172A',
+                fontFamily: uiFontFamily,
                 fontSize: 12,
                 fontWeight: 600,
+                color: '#FFFFFF',
+                background: accentGradient,
+                borderRadius: 999,
+                px: 1.75,
+                '&:hover': {
+                  boxShadow: '0 4px 14px rgba(0,82,255,0.25)',
+                },
               }}
             >
               Queue
@@ -146,10 +189,10 @@ export const ReviewPageHeader = ({
           ) : null}
           <Typography
             sx={{
-              fontFamily: baseFontFamily,
-              color: '#334155',
+              fontFamily: uiFontFamily,
+              color: '#475569',
               fontSize: 13,
-              fontWeight: 600,
+              fontWeight: 500,
               whiteSpace: 'nowrap',
             }}
           >
@@ -175,47 +218,64 @@ export const ReviewPageHeader = ({
 
         <Box
           sx={{
-            border: '1px solid #D9E3F2',
+            border: '1px solid #E2E8F0',
             borderRadius: 2,
             px: 1.5,
             py: 1.25,
-            bgcolor: 'rgba(255,255,255,0.86)',
+            bgcolor: '#FFFFFF',
             minHeight: 74,
+            boxShadow: shadowMd,
           }}
         >
           <Typography
             sx={{
-              fontFamily: baseFontFamily,
-              fontSize: 12,
+              fontFamily: monoFontFamily,
+              fontSize: 11,
               fontWeight: 600,
-              color: '#334155',
-              letterSpacing: '0.04em',
+              color: '#64748B',
+              letterSpacing: '0.08em',
               textTransform: 'uppercase',
+              mb: 0.4,
             }}
           >
             Reviewed
           </Typography>
           <Typography
             sx={{
-              fontFamily: baseFontFamily,
-              fontSize: 20,
+              fontFamily: uiFontFamily,
+              fontSize: 18,
               fontWeight: 700,
-              color: '#0F172A',
               mb: 0.75,
             }}
           >
-            {reviewedCount} / {totalFindings} ({progressPercent}%)
+            <Box
+              component="span"
+              sx={{
+                background: accentGradient,
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+              }}
+            >
+              {reviewedCount}
+            </Box>
+            <Box component="span" sx={{ color: '#94A3B8', fontWeight: 500, fontSize: 16 }}>
+              {' '}/ {totalFindings}
+            </Box>
+            <Box component="span" sx={{ color: '#64748B', fontWeight: 500, fontSize: 14 }}>
+              {' '}({progressPercent}%)
+            </Box>
           </Typography>
           <LinearProgress
             variant="determinate"
             value={progressPercent}
             sx={{
-              height: 8,
+              height: 6,
               borderRadius: 999,
-              bgcolor: '#DFE8F8',
+              bgcolor: '#E2E8F0',
               '& .MuiLinearProgress-bar': {
                 borderRadius: 999,
-                bgcolor: '#2563EB',
+                background: `linear-gradient(to right, ${accentColor}, ${accentSecondary})`,
               },
             }}
           />

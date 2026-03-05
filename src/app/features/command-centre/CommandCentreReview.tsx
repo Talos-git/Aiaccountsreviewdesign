@@ -6,7 +6,7 @@ import { FindingPanel } from './FindingPanel';
 import { QueuePanel } from './QueuePanel';
 import { ReviewPageHeader } from './ReviewPageHeader';
 import { BulkAction, Finding, FindingStatus, QueueSortMode } from './types';
-import { baseFontFamily } from './tokens';
+import { uiFontFamily } from './tokens';
 import { useKeyboardShortcuts } from './useKeyboardShortcuts';
 
 const severityRank: Record<Finding['severity'], number> = {
@@ -289,39 +289,41 @@ export const CommandCentreReview = () => {
         minHeight: 0,
         display: 'flex',
         flexDirection: 'column',
-        fontFamily: baseFontFamily,
-        bgcolor: '#F3F7FD',
+        fontFamily: uiFontFamily,
+        bgcolor: '#FAFAFA',
         backgroundImage:
-          'radial-gradient(circle at 15% -10%, rgba(37,99,235,0.12), transparent 45%), radial-gradient(circle at 100% 0%, rgba(14,165,233,0.11), transparent 40%)',
+          'radial-gradient(circle at 15% -10%, rgba(0,82,255,0.07), transparent 45%), radial-gradient(circle at 100% 0%, rgba(77,124,255,0.06), transparent 40%)',
       }}
     >
-      <ReviewPageHeader
-        meta={mockReviewData.meta}
-        totalFindings={totalFindings}
-        reviewedCount={counts.reviewed}
-        highCount={counts.high}
-        mediumCount={counts.medium}
-        lowCount={counts.low}
-        isMobile={isMobile}
-        onOpenQueue={() => setQueueDrawerOpen(true)}
-      />
-
       <Box sx={{ display: 'flex', flex: 1, minHeight: 0, flexDirection: isMobile ? 'column' : 'row' }}>
-        <FindingPanel
-          finding={currentFinding}
-          findingIndex={Math.max(currentIndex, 0)}
-          totalFindings={sortedFindings.length}
-          notesInputRef={notesInputRef}
-          onMarkStatus={(status) => updateFindingStatus(currentFinding.id, status)}
-          onNotesChange={updateCurrentFindingNotes}
-          onNotesBlur={() => flushAutosave(currentFinding.id)}
-          onSendToBookkeeper={handleSendToBookkeeper}
-          canGoPrev={currentIndex > 0}
-          canGoNext={currentIndex >= 0 && currentIndex < sortedFindings.length - 1}
-          onPrev={handlePrev}
-          onNext={handleNext}
-          lastSavedLabel={lastSavedLabel}
-        />
+        {/* Left column: header + finding panel, scrolls together */}
+        <Box sx={{ flex: 1, minWidth: 0, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+          <ReviewPageHeader
+            meta={mockReviewData.meta}
+            totalFindings={totalFindings}
+            reviewedCount={counts.reviewed}
+            highCount={counts.high}
+            mediumCount={counts.medium}
+            lowCount={counts.low}
+            isMobile={isMobile}
+            onOpenQueue={() => setQueueDrawerOpen(true)}
+          />
+          <FindingPanel
+            finding={currentFinding}
+            findingIndex={Math.max(currentIndex, 0)}
+            totalFindings={sortedFindings.length}
+            notesInputRef={notesInputRef}
+            onMarkStatus={(status) => updateFindingStatus(currentFinding.id, status)}
+            onNotesChange={updateCurrentFindingNotes}
+            onNotesBlur={() => flushAutosave(currentFinding.id)}
+            onSendToBookkeeper={handleSendToBookkeeper}
+            canGoPrev={currentIndex > 0}
+            canGoNext={currentIndex >= 0 && currentIndex < sortedFindings.length - 1}
+            onPrev={handlePrev}
+            onNext={handleNext}
+            lastSavedLabel={lastSavedLabel}
+          />
+        </Box>
 
         {!isMobile ? (
           <Box
@@ -330,6 +332,7 @@ export const CommandCentreReview = () => {
               minWidth: 340,
               maxWidth: 460,
               bgcolor: '#FFFFFF',
+              borderLeft: '1px solid #E2E8F0',
               minHeight: 0,
             }}
           >
@@ -346,8 +349,8 @@ export const CommandCentreReview = () => {
           sx: {
             width: 'min(92vw, 380px)',
             bgcolor: '#FFFFFF',
-            borderLeft: '1px solid #D8E2F1',
-            fontFamily: baseFontFamily,
+            borderLeft: `1px solid #E2E8F0`,
+            fontFamily: uiFontFamily,
           },
         }}
       >

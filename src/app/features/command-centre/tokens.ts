@@ -7,7 +7,7 @@ export const severityColors: Record<FindingSeverity, string> = {
 };
 
 export const sourceColors: Record<FindingSource, string> = {
-  ai: '#3B82F6',
+  ai: '#0052FF',
   code: '#8B5CF6',
 };
 
@@ -24,4 +24,16 @@ export const assertionColors: Record<string, string> = {
   A: '#7C3AED',
 };
 
-export const baseFontFamily = `"Suisse Int'l", "Avenir Next", "Segoe UI", sans-serif`;
+export const accentColor = '#0052FF';
+export const accentSecondary = '#4D7CFF';
+export const accentGradient = 'linear-gradient(135deg, #0052FF, #4D7CFF)';
+
+export const displayFontFamily = '"Calistoga", Georgia, serif';
+export const uiFontFamily = '"Inter", system-ui, sans-serif';
+export const monoFontFamily = '"JetBrains Mono", monospace';
+
+export const baseFontFamily = uiFontFamily;
+
+export const shadowAccent = '0 4px 14px rgba(0,82,255,0.25)';
+export const shadowAccentLg = '0 8px 24px rgba(0,82,255,0.35)';
+export const shadowMd = '0 4px 6px rgba(0,0,0,0.07)';

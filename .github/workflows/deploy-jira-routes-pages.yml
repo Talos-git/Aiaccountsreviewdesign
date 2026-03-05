@@ -5,6 +5,7 @@ on:
     branches:
       - "feature/MIND-415/ai-review-tab"
       - "feature/MIND-554/command-centre-triage-mode"
+      - "feature/MIND-554A/command-centre-triage-mode"
       - "feature/MIND-555/kanban-board-ui"
   workflow_dispatch:
 
@@ -27,6 +28,8 @@ jobs:
             jira_key: MIND-415
           - branch: feature/MIND-554/command-centre-triage-mode
             jira_key: MIND-554
+          - branch: feature/MIND-554A/command-centre-triage-mode
+            jira_key: MIND-554A
           - branch: feature/MIND-555/kanban-board-ui
             jira_key: MIND-555
 
@@ -99,6 +102,12 @@ jobs:
           name: preview-MIND-554
           path: site/MIND-554
 
+      - name: Download MIND-554A artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: preview-MIND-554A
+          path: site/MIND-554A
+
       - name: Download MIND-555 artifact
         uses: actions/download-artifact@v4
         with:
@@ -109,7 +118,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for jira_key in MIND-415 MIND-554 MIND-555; do
+          for jira_key in MIND-415 MIND-554 MIND-554A MIND-555; do
             if [[ ! -f "site/${jira_key}/index.html" ]]; then
               echo "Missing site/${jira_key}/index.html in staged deployment output" >&2
               exit 1
@@ -168,6 +177,7 @@ jobs:
                 <ul>
                   <li><a href="./MIND-415/">MIND-415</a></li>
                   <li><a href="./MIND-554/">MIND-554</a></li>
+                  <li><a href="./MIND-554A/">MIND-554A</a></li>
                   <li><a href="./MIND-555/">MIND-555</a></li>
                 </ul>
               </main>

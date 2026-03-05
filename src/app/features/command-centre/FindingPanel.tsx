@@ -10,7 +10,7 @@ import {
 } from '@mui/material';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { Finding, FindingStatus } from './types';
-import { assertionColors, baseFontFamily, severityColors, sourceColors, statusColors } from './tokens';
+import { accentColor, accentGradient, assertionColors, displayFontFamily, monoFontFamily, severityColors, shadowAccentLg, sourceColors, statusColors, uiFontFamily } from './tokens';
 
 interface FindingPanelProps {
   finding: Finding;
@@ -49,55 +49,57 @@ export const FindingPanel = ({
 }: FindingPanelProps) => {
   const severityLabel = toTitleCase(finding.severity);
   const sourceLabel = finding.source === 'ai' ? 'AI' : 'Code';
+  const isAiSource = finding.source === 'ai';
 
   return (
     <Box
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        minHeight: 0,
         flex: 1,
         minWidth: 0,
-        borderRight: { xs: 'none', lg: '1px solid #D8E2F1' },
+        borderRight: { xs: 'none', lg: '1px solid #E2E8F0' },
       }}
     >
-      <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', px: { xs: 1.5, md: 3 }, py: { xs: 2, md: 2.5 } }}>
+      <Box sx={{ px: { xs: 1.5, md: 3 }, py: { xs: 2, md: 2.5 } }}>
+        {/* Finding counter */}
         <Typography
           sx={{
-            fontFamily: baseFontFamily,
-            fontSize: 13,
+            fontFamily: monoFontFamily,
+            fontSize: 11,
             fontWeight: 600,
-            color: '#64748B',
+            color: accentColor,
             textTransform: 'uppercase',
-            letterSpacing: '0.05em',
+            letterSpacing: '0.1em',
             mb: 1.25,
           }}
         >
           Finding {findingIndex + 1} of {totalFindings}
         </Typography>
 
+        {/* Chips */}
         <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" sx={{ mb: 1.25 }}>
           <Chip
-            label={`${severityLabel}`}
+            label={severityLabel}
             size="small"
             sx={{
-              bgcolor: `${severityColors[finding.severity]}20`,
+              bgcolor: `${severityColors[finding.severity]}18`,
               color: severityColors[finding.severity],
-              fontFamily: baseFontFamily,
-              fontWeight: 700,
-              borderRadius: 1,
+              fontFamily: uiFontFamily,
+              fontWeight: 600,
+              borderRadius: 999,
               border: `1px solid ${severityColors[finding.severity]}55`,
             }}
           />
           <Chip
-            label={`${finding.assertion} - ${finding.assertionLabel}`}
+            label={`${finding.assertion} — ${finding.assertionLabel}`}
             size="small"
             sx={{
               bgcolor: `${assertionColors[finding.assertion]}1A`,
               color: assertionColors[finding.assertion],
-              fontFamily: baseFontFamily,
-              fontWeight: 700,
-              borderRadius: 1,
+              fontFamily: uiFontFamily,
+              fontWeight: 600,
+              borderRadius: 999,
               border: `1px solid ${assertionColors[finding.assertion]}50`,
             }}
           />
@@ -105,12 +107,12 @@ export const FindingPanel = ({
             label={`Source: ${sourceLabel}`}
             size="small"
             sx={{
-              bgcolor: `${sourceColors[finding.source]}1A`,
-              color: sourceColors[finding.source],
-              fontFamily: baseFontFamily,
-              fontWeight: 700,
-              borderRadius: 1,
-              border: `1px solid ${sourceColors[finding.source]}50`,
+              bgcolor: isAiSource ? `${accentColor}12` : `${sourceColors[finding.source]}1A`,
+              color: isAiSource ? accentColor : sourceColors[finding.source],
+              fontFamily: uiFontFamily,
+              fontWeight: 600,
+              borderRadius: 999,
+              border: `1px solid ${isAiSource ? accentColor : sourceColors[finding.source]}50`,
             }}
           />
           <Chip
@@ -119,32 +121,43 @@ export const FindingPanel = ({
             sx={{
               bgcolor: `${statusColors[finding.status]}1A`,
               color: statusColors[finding.status],
-              fontFamily: baseFontFamily,
-              fontWeight: 700,
-              borderRadius: 1,
+              fontFamily: uiFontFamily,
+              fontWeight: 600,
+              borderRadius: 999,
               border: `1px solid ${statusColors[finding.status]}50`,
             }}
           />
         </Stack>
 
-        <Typography sx={{ fontFamily: baseFontFamily, fontSize: 13, color: '#475569', mb: 1.5 }}>
+        {/* Path label */}
+        <Typography sx={{ fontFamily: uiFontFamily, fontSize: 13, color: '#64748B', mb: 1.5 }}>
           {finding.pathLabel}
         </Typography>
 
-        <Typography
+        {/* Finding title with severity left border */}
+        <Box
           sx={{
-            fontFamily: baseFontFamily,
-            fontSize: { xs: 20, md: 24 },
-            fontWeight: 700,
-            color: '#0F172A',
-            lineHeight: 1.2,
+            borderLeft: `3px solid ${severityColors[finding.severity]}`,
+            pl: 1.5,
+            mb: 2,
           }}
         >
-          {finding.title}
-        </Typography>
+          <Typography
+            sx={{
+              fontFamily: displayFontFamily,
+              fontSize: { xs: 22, md: 28 },
+              fontWeight: 'normal',
+              color: '#0F172A',
+              lineHeight: 1.2,
+            }}
+          >
+            {finding.title}
+          </Typography>
+        </Box>
 
-        <Divider sx={{ my: 2 }} />
+        <Divider sx={{ mb: 2 }} />
 
+        {/* Data fields */}
         <Box
           sx={{
             display: 'grid',
@@ -159,37 +172,41 @@ export const FindingPanel = ({
           <DataField label="Fix" value={finding.fixLabel} />
         </Box>
 
+        {/* Supporting refs */}
         <Box
           sx={{
-            border: '1px solid #DCE5F2',
+            border: '1px solid #E2E8F0',
+            borderLeft: `4px solid ${accentColor}`,
             borderRadius: 2,
             p: 1.5,
-            bgcolor: '#F8FAFD',
+            bgcolor: '#FAFAFA',
             mb: 2.25,
+            boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
           }}
         >
           <Typography
             sx={{
-              fontFamily: baseFontFamily,
-              fontSize: 12,
-              fontWeight: 700,
-              color: '#334155',
+              fontFamily: monoFontFamily,
+              fontSize: 11,
+              fontWeight: 600,
+              color: accentColor,
               textTransform: 'uppercase',
-              letterSpacing: '0.05em',
+              letterSpacing: '0.08em',
               mb: 0.75,
             }}
           >
             Supporting
           </Typography>
-          <Typography sx={{ fontFamily: baseFontFamily, fontSize: 14, color: '#0F172A' }}>
+          <Typography sx={{ fontFamily: uiFontFamily, fontSize: 14, color: '#0F172A' }}>
             {finding.supportingRefs.join(', ')}
           </Typography>
-          <Typography sx={{ fontFamily: baseFontFamily, fontSize: 12, color: '#64748B', mt: 0.5 }}>
+          <Typography sx={{ fontFamily: uiFontFamily, fontSize: 12, color: '#64748B', mt: 0.5 }}>
             No additional receipts found in linked storage.
           </Typography>
         </Box>
 
-        <Typography sx={{ fontFamily: baseFontFamily, fontSize: 14, fontWeight: 700, color: '#0F172A', mb: 0.75 }}>
+        {/* Notes */}
+        <Typography sx={{ fontFamily: uiFontFamily, fontSize: 14, fontWeight: 600, color: '#0F172A', mb: 0.75 }}>
           Notes
         </Typography>
         <TextField
@@ -205,20 +222,30 @@ export const FindingPanel = ({
             mb: 1,
             '& .MuiOutlinedInput-root': {
               borderRadius: 2,
-              fontFamily: baseFontFamily,
+              fontFamily: uiFontFamily,
               bgcolor: '#FFFFFF',
               '& textarea': {
-                fontFamily: baseFontFamily,
+                fontFamily: uiFontFamily,
                 fontSize: 14,
+                color: '#0F172A',
+                '&::placeholder': {
+                  color: '#94A3B8',
+                  opacity: 1,
+                },
+              },
+              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                borderColor: accentColor,
+                borderWidth: 2,
               },
             },
           }}
         />
 
-        <Typography sx={{ fontFamily: baseFontFamily, fontSize: 12, color: '#64748B', mb: 2 }}>
+        <Typography sx={{ fontFamily: uiFontFamily, fontSize: 12, color: '#64748B', mb: 2 }}>
           {lastSavedLabel}
         </Typography>
 
+        {/* Action buttons */}
         <Stack direction="row" spacing={1.25} sx={{ mb: 1.25 }}>
           <Button
             fullWidth
@@ -227,11 +254,18 @@ export const FindingPanel = ({
             sx={{
               textTransform: 'none',
               borderColor: '#CBD5E1',
-              color: '#334155',
-              fontFamily: baseFontFamily,
-              fontWeight: 700,
+              color: '#475569',
+              fontFamily: uiFontFamily,
+              fontWeight: 600,
               py: 1,
               borderRadius: 2,
+              transition: 'all 180ms ease',
+              '&:hover': {
+                borderColor: `${accentColor}55`,
+                color: '#334155',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                bgcolor: 'transparent',
+              },
             }}
           >
             Irrelevant
@@ -242,14 +276,16 @@ export const FindingPanel = ({
             onClick={() => onMarkStatus('complete')}
             sx={{
               textTransform: 'none',
-              bgcolor: '#16A34A',
+              background: 'linear-gradient(135deg, #16A34A, #22C55E)',
               color: '#FFFFFF',
-              fontFamily: baseFontFamily,
-              fontWeight: 700,
+              fontFamily: uiFontFamily,
+              fontWeight: 600,
               py: 1,
               borderRadius: 2,
+              boxShadow: 'none',
               '&:hover': {
-                bgcolor: '#15803D',
+                background: 'linear-gradient(135deg, #15803D, #16A34A)',
+                boxShadow: '0 4px 12px rgba(34,197,94,0.3)',
               },
             }}
           >
@@ -264,17 +300,21 @@ export const FindingPanel = ({
           onClick={onSendToBookkeeper}
           sx={{
             textTransform: 'none',
-            fontFamily: baseFontFamily,
-            fontWeight: 700,
+            fontFamily: uiFontFamily,
+            fontWeight: 600,
             borderRadius: 2,
             py: 1,
-            bgcolor: '#2563EB',
+            background: accentGradient,
+            boxShadow: 'none',
+            transition: 'all 180ms ease',
             '&:hover': {
-              bgcolor: '#1D4ED8',
+              background: accentGradient,
+              boxShadow: shadowAccentLg,
             },
             '&.Mui-disabled': {
-              bgcolor: '#CBD5E1',
-              color: '#64748B',
+              bgcolor: '#E2E8F0',
+              background: 'none',
+              color: '#94A3B8',
             },
           }}
         >
@@ -284,7 +324,8 @@ export const FindingPanel = ({
 
       <Divider />
 
-      <Box sx={{ px: { xs: 1.5, md: 3 }, py: 1.5, bgcolor: '#F8FAFD' }}>
+      {/* Navigation footer — inverted dark */}
+      <Box sx={{ px: { xs: 1.5, md: 3 }, py: 1.5, bgcolor: '#0F172A' }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
           <Button
             size="small"
@@ -293,15 +334,46 @@ export const FindingPanel = ({
             startIcon={<ChevronLeft />}
             sx={{
               textTransform: 'none',
-              fontFamily: baseFontFamily,
-              fontWeight: 700,
+              fontFamily: uiFontFamily,
+              fontWeight: 600,
+              color: '#E2E8F0',
+              '&:hover': { color: '#FFFFFF', bgcolor: 'rgba(255,255,255,0.08)' },
+              '&.Mui-disabled': { color: '#475569' },
             }}
           >
             Prev
           </Button>
-          <Typography sx={{ fontFamily: baseFontFamily, fontSize: 12, color: '#64748B', fontWeight: 600 }}>
-            J/K navigate, I mark irrelevant, C complete, N note
-          </Typography>
+
+          {/* Keyboard shortcuts badge */}
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 0.5,
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+            }}
+          >
+            {['J/K nav', 'I irrelevant', 'C complete', 'N note'].map((shortcut) => (
+              <Box
+                key={shortcut}
+                sx={{
+                  fontFamily: monoFontFamily,
+                  fontSize: 10,
+                  fontWeight: 500,
+                  color: '#64748B',
+                  bgcolor: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: 1,
+                  px: 0.75,
+                  py: 0.25,
+                  letterSpacing: '0.03em',
+                }}
+              >
+                {shortcut}
+              </Box>
+            ))}
+          </Box>
+
           <Button
             size="small"
             onClick={onNext}
@@ -309,8 +381,11 @@ export const FindingPanel = ({
             endIcon={<ChevronRight />}
             sx={{
               textTransform: 'none',
-              fontFamily: baseFontFamily,
-              fontWeight: 700,
+              fontFamily: uiFontFamily,
+              fontWeight: 600,
+              color: '#E2E8F0',
+              '&:hover': { color: '#FFFFFF', bgcolor: 'rgba(255,255,255,0.08)' },
+              '&.Mui-disabled': { color: '#475569' },
             }}
           >
             Next
@@ -335,22 +410,23 @@ const DataField = ({ label, value }: DataFieldProps) => {
         px: 1.25,
         py: 1,
         bgcolor: '#FFFFFF',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
       }}
     >
       <Typography
         sx={{
-          fontFamily: baseFontFamily,
-          fontSize: 11,
-          fontWeight: 700,
-          color: '#64748B',
+          fontFamily: monoFontFamily,
+          fontSize: 10,
+          fontWeight: 600,
+          color: accentColor,
           textTransform: 'uppercase',
-          letterSpacing: '0.05em',
+          letterSpacing: '0.08em',
           mb: 0.35,
         }}
       >
         {label}
       </Typography>
-      <Typography sx={{ fontFamily: baseFontFamily, fontSize: 14, color: '#0F172A', fontWeight: 600 }}>
+      <Typography sx={{ fontFamily: uiFontFamily, fontSize: 14, color: '#0F172A', fontWeight: 600 }}>
         {value}
       </Typography>
     </Box>
