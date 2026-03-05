@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Box, Button, Stack, TextField, Typography } from '@mui/material';
-import { Send } from '@mui/icons-material';
+import { ChatBubbleOutline, Send } from '@mui/icons-material';
 import { format } from 'date-fns';
 import { ConversationMessage, MessageAuthor } from './types';
 import { accentGradient, monoFontFamily, roleColors, shadowAccentLg, uiFontFamily } from './tokens';
@@ -153,17 +153,13 @@ export const ConversationThread = ({ messages, activeRole, onSendMessage }: Conv
           ))}
         </Stack>
       ) : (
-        <Box
-          sx={{
-            border: '1px dashed #E2E8F0',
-            borderRadius: 2,
-            p: 2,
-            mb: 2,
-            textAlign: 'center',
-          }}
-        >
+        <Box sx={{ py: 3, mb: 2, textAlign: 'center' }}>
+          <ChatBubbleOutline sx={{ fontSize: 28, color: '#CBD5E1', mb: 1 }} />
           <Typography sx={{ fontFamily: uiFontFamily, fontSize: 13, color: '#94A3B8' }}>
-            No messages yet. Add context before sending to the bookkeeper.
+            No messages yet
+          </Typography>
+          <Typography sx={{ fontFamily: uiFontFamily, fontSize: 12, color: '#CBD5E1', mt: 0.5 }}>
+            Add context before sending to the bookkeeper.
           </Typography>
         </Box>
       )}
@@ -192,6 +188,10 @@ export const ConversationThread = ({ messages, activeRole, onSendMessage }: Conv
             '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
               borderColor: activeRole === 'accountant' ? roleColors.accountant : roleColors.bookkeeper,
               borderWidth: 2,
+            },
+            '&.Mui-focusVisible': {
+              outline: `2px solid ${activeRole === 'accountant' ? roleColors.accountant : roleColors.bookkeeper}`,
+              outlineOffset: 2,
             },
           },
         }}

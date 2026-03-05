@@ -8,7 +8,7 @@ import {
 } from '@mui/material';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { ConversationMessage, Finding, FindingStatus } from './types';
-import { accentColor, accentGradient, assertionColors, displayFontFamily, monoFontFamily, roleColors, severityColors, shadowAccentLg, sourceColors, statusColors, uiFontFamily } from './tokens';
+import { accentColor, accentGradient, assertionColors, displayFontFamily, monoFontFamily, roleColors, severityColors, shadowAccentLg, sourceColors, statusColors, statusLabel, uiFontFamily } from './tokens';
 import { ConversationThread } from './ConversationThread';
 
 interface FindingPanelProps {
@@ -119,7 +119,7 @@ export const FindingPanel = ({
             }}
           />
           <Chip
-            label={`Status: ${finding.status.replace(/_/g, ' ')}`}
+            label={`Status: ${statusLabel[finding.status]}`}
             size="small"
             sx={{
               bgcolor: `${statusColors[finding.status]}1A`,
@@ -176,36 +176,50 @@ export const FindingPanel = ({
         </Box>
 
         {/* Supporting refs */}
-        <Box
-          sx={{
-            border: '1px solid #E2E8F0',
-            borderLeft: `4px solid ${accentColor}`,
-            borderRadius: 2,
-            p: 1.5,
-            bgcolor: '#FAFAFA',
-            mb: 2.25,
-            boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
-          }}
-        >
-          <Typography
+        <Box sx={{ mb: 2.25 }}>
+          <Box
             sx={{
-              fontFamily: monoFontFamily,
-              fontSize: 11,
-              fontWeight: 600,
-              color: accentColor,
-              textTransform: 'uppercase',
-              letterSpacing: '0.08em',
-              mb: 0.75,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 0.75,
+              border: `1px solid ${accentColor}33`,
+              bgcolor: `${accentColor}0D`,
+              borderRadius: 999,
+              px: 1.25,
+              py: 0.35,
+              mb: 1,
             }}
           >
-            Supporting
-          </Typography>
-          <Typography sx={{ fontFamily: uiFontFamily, fontSize: 14, color: '#0F172A' }}>
-            {finding.supportingRefs.join(', ')}
-          </Typography>
-          <Typography sx={{ fontFamily: uiFontFamily, fontSize: 12, color: '#64748B', mt: 0.5 }}>
-            No additional receipts found in linked storage.
-          </Typography>
+            <Box sx={{ width: 5, height: 5, borderRadius: '50%', bgcolor: accentColor, flexShrink: 0 }} />
+            <Typography
+              sx={{
+                fontFamily: monoFontFamily,
+                fontSize: 10,
+                fontWeight: 600,
+                color: accentColor,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+              }}
+            >
+              Supporting
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              border: '1px solid #E2E8F0',
+              borderRadius: 2,
+              p: 1.5,
+              bgcolor: '#FAFAFA',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+            }}
+          >
+            <Typography sx={{ fontFamily: uiFontFamily, fontSize: 14, color: '#0F172A' }}>
+              {finding.supportingRefs.join(', ')}
+            </Typography>
+            <Typography sx={{ fontFamily: uiFontFamily, fontSize: 12, color: '#64748B', mt: 0.5 }}>
+              No additional receipts found in linked storage.
+            </Typography>
+          </Box>
         </Box>
 
         {/* Conversation thread */}
@@ -364,6 +378,7 @@ export const FindingPanel = ({
               fontFamily: uiFontFamily,
               fontWeight: 600,
               color: '#E2E8F0',
+              minHeight: 36,
               '&:hover': { color: '#FFFFFF', bgcolor: 'rgba(255,255,255,0.08)' },
               '&.Mui-disabled': { color: '#475569' },
             }}
@@ -372,31 +387,28 @@ export const FindingPanel = ({
           </Button>
 
           {/* Keyboard shortcuts badge */}
-          <Box
-            sx={{
-              display: 'flex',
-              gap: 0.5,
-              flexWrap: 'wrap',
-              justifyContent: 'center',
-            }}
-          >
-            {['J/K nav', 'I irrelevant', 'C complete'].map((shortcut) => (
-              <Box
-                key={shortcut}
-                sx={{
-                  fontFamily: monoFontFamily,
-                  fontSize: 10,
-                  fontWeight: 500,
-                  color: '#64748B',
-                  bgcolor: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: 1,
-                  px: 0.75,
-                  py: 0.25,
-                  letterSpacing: '0.03em',
-                }}
-              >
-                {shortcut}
+          <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center' }}>
+            {([['J/K', 'nav'], ['I', 'irrelevant'], ['C', 'complete']] as const).map(([key, action]) => (
+              <Box key={key} sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
+                <Box
+                  sx={{
+                    fontFamily: monoFontFamily,
+                    fontSize: 10,
+                    fontWeight: 600,
+                    color: '#E2E8F0',
+                    bgcolor: 'rgba(255,255,255,0.12)',
+                    border: '1px solid rgba(255,255,255,0.18)',
+                    borderRadius: 0.75,
+                    px: 0.75,
+                    py: 0.15,
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {key}
+                </Box>
+                <Typography sx={{ fontFamily: uiFontFamily, fontSize: 10, color: '#475569' }}>
+                  {action}
+                </Typography>
               </Box>
             ))}
           </Box>
@@ -411,6 +423,7 @@ export const FindingPanel = ({
               fontFamily: uiFontFamily,
               fontWeight: 600,
               color: '#E2E8F0',
+              minHeight: 36,
               '&:hover': { color: '#FFFFFF', bgcolor: 'rgba(255,255,255,0.08)' },
               '&.Mui-disabled': { color: '#475569' },
             }}

@@ -1,5 +1,5 @@
 import { format } from 'date-fns';
-import { Box, Button, LinearProgress, Stack, Typography } from '@mui/material';
+import { Box, Button, Divider, LinearProgress, Stack, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { Menu as MenuIcon } from '@mui/icons-material';
 import { ReviewMeta } from './types';
 import { accentColor, accentGradient, accentSecondary, displayFontFamily, monoFontFamily, roleColors, severityColors, shadowMd, uiFontFamily } from './tokens';
@@ -24,10 +24,12 @@ interface StatTileProps {
 }
 
 const StatTile = ({ value, label, valueColor = '#0F172A' }: StatTileProps) => {
+  const hasSeverityColor = valueColor !== '#0F172A';
   return (
     <Box
       sx={{
         border: '1px solid #E2E8F0',
+        borderTop: hasSeverityColor ? `3px solid ${valueColor}` : '1px solid #E2E8F0',
         borderRadius: 2,
         px: 1.5,
         py: 1.25,
@@ -153,40 +155,58 @@ export const ReviewPageHeader = ({
           >
             {meta.title}
           </Typography>
-          <Typography
-            sx={{
-              fontFamily: uiFontFamily,
-              fontSize: 13,
-              color: '#64748B',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              mt: 0.25,
-            }}
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={1}
+            divider={<Divider orientation="vertical" flexItem sx={{ borderColor: '#CBD5E1', my: 0.25 }} />}
+            sx={{ mt: 0.25, overflow: 'hidden' }}
           >
-            {meta.clientName} | {meta.periodLabel} | {meta.versionLabel}
-          </Typography>
+            {[meta.clientName, meta.periodLabel, meta.versionLabel].filter(Boolean).map((v) => (
+              <Typography
+                key={v}
+                sx={{
+                  fontFamily: uiFontFamily,
+                  fontSize: 13,
+                  color: '#64748B',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  flexShrink: 0,
+                }}
+              >
+                {v}
+              </Typography>
+            ))}
+          </Stack>
         </Box>
 
         <Stack direction="row" alignItems="center" spacing={1.5}>
           {/* Role switcher */}
-          <Box
+          <ToggleButtonGroup
+            value={activeRole}
+            exclusive
+            onChange={(_, v) => { if (v) onRoleChange(v); }}
+            size="small"
             sx={{
-              display: 'flex',
+              bgcolor: '#F8FAFC',
               border: '1px solid #E2E8F0',
               borderRadius: 999,
               overflow: 'hidden',
-              bgcolor: '#F8FAFC',
+              p: 0.25,
+              '& .MuiToggleButtonGroup-grouped': {
+                border: 0,
+                borderRadius: '999px !important',
+                mx: 0.25,
+              },
             }}
           >
             {(['accountant', 'bookkeeper'] as const).map((role) => {
-              const isActive = activeRole === role;
               const color = roleColors[role];
               return (
-                <Button
+                <ToggleButton
                   key={role}
-                  size="small"
-                  onClick={() => onRoleChange(role)}
+                  value={role}
                   sx={{
                     textTransform: 'none',
                     fontFamily: uiFontFamily,
@@ -194,22 +214,21 @@ export const ReviewPageHeader = ({
                     fontSize: 12,
                     px: 1.5,
                     py: 0.5,
-                    borderRadius: 0,
-                    minWidth: 0,
-                    color: isActive ? '#FFFFFF' : '#64748B',
-                    bgcolor: isActive ? color : 'transparent',
+                    color: '#64748B',
                     transition: 'all 180ms ease',
-                    '&:hover': {
-                      bgcolor: isActive ? color : `${color}12`,
-                      color: isActive ? '#FFFFFF' : color,
+                    '&.Mui-selected': {
+                      color: '#FFFFFF',
+                      bgcolor: color,
+                      '&:hover': { bgcolor: color },
                     },
+                    '&:hover': { bgcolor: `${color}12`, color: color },
                   }}
                 >
                   {role === 'accountant' ? 'Accountant' : 'Bookkeeper'}
-                </Button>
+                </ToggleButton>
               );
             })}
-          </Box>
+          </ToggleButtonGroup>
 
           {isMobile ? (
             <Button

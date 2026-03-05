@@ -9,14 +9,18 @@ import {
   Select,
   SelectChangeEvent,
   Stack,
+  Tooltip,
   Typography,
 } from '@mui/material';
 import {
+  AccountTree,
   CheckCircle,
+  FilterList,
   HourglassEmpty,
   PlayArrow,
   RadioButtonUnchecked,
   RemoveCircleOutline,
+  Sort,
   SwapHoriz,
 } from '@mui/icons-material';
 import { FixedSizeList, ListChildComponentProps } from 'react-window';
@@ -180,7 +184,7 @@ export const QueuePanel = ({
             sx={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: 0.6,
+              gap: 0.75,
               border: `1px solid ${accentColor}33`,
               bgcolor: `${accentColor}0D`,
               borderRadius: 999,
@@ -188,6 +192,20 @@ export const QueuePanel = ({
               py: 0.3,
             }}
           >
+            <Box
+              sx={{
+                width: 6,
+                height: 6,
+                borderRadius: '50%',
+                bgcolor: accentColor,
+                flexShrink: 0,
+                '@keyframes queuePulse': {
+                  '0%, 100%': { opacity: 1, transform: 'scale(1)' },
+                  '50%': { opacity: 0.6, transform: 'scale(0.8)' },
+                },
+                animation: 'queuePulse 2s ease-in-out infinite',
+              }}
+            />
             <Typography
               sx={{
                 fontFamily: monoFontFamily,
@@ -207,85 +225,102 @@ export const QueuePanel = ({
         </Stack>
 
         {/* Row 2: COA path filter + Status filter + Sort */}
-        <Stack direction="row" alignItems="center" spacing={0.75} flexWrap="wrap" useFlexGap>
-          <FormControl size="small">
-            <Select
-              value={pathFilter}
-              onChange={(event) => onPathFilterChange(event.target.value as QueuePathFilter)}
-              displayEmpty
-              sx={{
-                minWidth: 130,
-                height: 28,
-                fontSize: 12,
-                fontFamily: uiFontFamily,
-                bgcolor: '#FFFFFF',
-                borderRadius: 1.5,
-              }}
-            >
-              <MenuItem value="all" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>All paths</MenuItem>
-              {Object.entries(pathGroups).map(([segment, paths]) => [
-                <MenuItem
-                  key={`group-${segment}`}
-                  disabled
-                  sx={{ fontFamily: monoFontFamily, fontSize: 10, fontWeight: 700, color: accentColor, letterSpacing: '0.06em', textTransform: 'uppercase', py: 0.5, opacity: '1 !important' }}
-                >
-                  {segment}
-                </MenuItem>,
-                ...paths.map((path) => {
-                  // Show only the last two segments to keep it compact: "Operating Expenses > Depreciation"
-                  const parts = path.split(' > ');
-                  const label = parts.slice(1).join(' > ');
-                  return (
-                    <MenuItem key={path} value={path} sx={{ fontFamily: uiFontFamily, fontSize: 12, pl: 3 }}>
-                      {label}
-                    </MenuItem>
-                  );
-                }),
-              ])}
-            </Select>
-          </FormControl>
+        <Stack direction="row" alignItems="flex-end" spacing={0.75} flexWrap="wrap" useFlexGap>
+          <Box>
+            <Stack direction="row" alignItems="center" spacing={0.4} sx={{ mb: 0.4 }}>
+              <AccountTree sx={{ fontSize: 10, color: '#94A3B8' }} />
+              <Typography sx={{ fontFamily: monoFontFamily, fontSize: 9, fontWeight: 600, color: '#94A3B8', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Path</Typography>
+            </Stack>
+            <FormControl size="small">
+              <Select
+                value={pathFilter}
+                onChange={(event) => onPathFilterChange(event.target.value as QueuePathFilter)}
+                displayEmpty
+                sx={{
+                  minWidth: 130,
+                  height: 28,
+                  fontSize: 12,
+                  fontFamily: uiFontFamily,
+                  bgcolor: '#FFFFFF',
+                  borderRadius: 1.5,
+                }}
+              >
+                <MenuItem value="all" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>All paths</MenuItem>
+                {Object.entries(pathGroups).map(([segment, paths]) => [
+                  <MenuItem
+                    key={`group-${segment}`}
+                    disabled
+                    sx={{ fontFamily: monoFontFamily, fontSize: 10, fontWeight: 700, color: accentColor, letterSpacing: '0.06em', textTransform: 'uppercase', py: 0.5, opacity: '1 !important' }}
+                  >
+                    {segment}
+                  </MenuItem>,
+                  ...paths.map((path) => {
+                    const parts = path.split(' > ');
+                    const label = parts.slice(1).join(' > ');
+                    return (
+                      <MenuItem key={path} value={path} sx={{ fontFamily: uiFontFamily, fontSize: 12, pl: 3 }}>
+                        {label}
+                      </MenuItem>
+                    );
+                  }),
+                ])}
+              </Select>
+            </FormControl>
+          </Box>
 
-          <FormControl size="small">
-            <Select
-              value={statusFilter}
-              onChange={(event) => onStatusFilterChange(event.target.value as QueueStatusFilter)}
-              sx={{
-                minWidth: 110,
-                height: 28,
-                fontSize: 12,
-                fontFamily: uiFontFamily,
-                bgcolor: '#FFFFFF',
-                borderRadius: 1.5,
-              }}
-            >
-              <MenuItem value="all" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>All status</MenuItem>
-              <MenuItem value="draft_ai" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>Draft (AI)</MenuItem>
-              <MenuItem value="draft_human" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>Draft (Manual)</MenuItem>
-              <MenuItem value="needs_action" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>Needs Action</MenuItem>
-              <MenuItem value="in_review" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>In Review</MenuItem>
-              <MenuItem value="complete" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>Complete</MenuItem>
-              <MenuItem value="irrelevant" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>Irrelevant</MenuItem>
-            </Select>
-          </FormControl>
+          <Box>
+            <Stack direction="row" alignItems="center" spacing={0.4} sx={{ mb: 0.4 }}>
+              <FilterList sx={{ fontSize: 10, color: '#94A3B8' }} />
+              <Typography sx={{ fontFamily: monoFontFamily, fontSize: 9, fontWeight: 600, color: '#94A3B8', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Status</Typography>
+            </Stack>
+            <FormControl size="small">
+              <Select
+                value={statusFilter}
+                onChange={(event) => onStatusFilterChange(event.target.value as QueueStatusFilter)}
+                sx={{
+                  minWidth: 110,
+                  height: 28,
+                  fontSize: 12,
+                  fontFamily: uiFontFamily,
+                  bgcolor: '#FFFFFF',
+                  borderRadius: 1.5,
+                }}
+              >
+                <MenuItem value="all" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>All status</MenuItem>
+                <MenuItem value="draft_ai" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>Draft (AI)</MenuItem>
+                <MenuItem value="draft_human" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>Draft (Manual)</MenuItem>
+                <MenuItem value="needs_action" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>Needs Action</MenuItem>
+                <MenuItem value="in_review" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>In Review</MenuItem>
+                <MenuItem value="complete" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>Complete</MenuItem>
+                <MenuItem value="irrelevant" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>Irrelevant</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
 
-          <FormControl size="small">
-            <Select
-              value={sortMode}
-              onChange={handleSortChange}
-              sx={{
-                minWidth: 90,
-                height: 28,
-                fontSize: 12,
-                fontFamily: uiFontFamily,
-                bgcolor: '#FFFFFF',
-                borderRadius: 1.5,
-              }}
-            >
-              <MenuItem value="severity" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>Severity</MenuItem>
-              <MenuItem value="amount" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>Amount</MenuItem>
-              <MenuItem value="account" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>Account</MenuItem>
-            </Select>
-          </FormControl>
+          <Box>
+            <Stack direction="row" alignItems="center" spacing={0.4} sx={{ mb: 0.4 }}>
+              <Sort sx={{ fontSize: 10, color: '#94A3B8' }} />
+              <Typography sx={{ fontFamily: monoFontFamily, fontSize: 9, fontWeight: 600, color: '#94A3B8', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Sort</Typography>
+            </Stack>
+            <FormControl size="small">
+              <Select
+                value={sortMode}
+                onChange={handleSortChange}
+                sx={{
+                  minWidth: 90,
+                  height: 28,
+                  fontSize: 12,
+                  fontFamily: uiFontFamily,
+                  bgcolor: '#FFFFFF',
+                  borderRadius: 1.5,
+                }}
+              >
+                <MenuItem value="severity" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>Severity</MenuItem>
+                <MenuItem value="amount" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>Amount</MenuItem>
+                <MenuItem value="account" sx={{ fontFamily: uiFontFamily, fontSize: 12 }}>Account</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
         </Stack>
       </Box>
 
@@ -344,7 +379,7 @@ export const QueuePanel = ({
           />
           <Typography sx={{ fontFamily: uiFontFamily, fontSize: 12, color: '#0F172A', fontWeight: 600 }}>
             Select all{' '}
-            <Box component="span" sx={{ color: '#EF4444', fontWeight: 700 }}>
+            <Box component="span" sx={{ color: severityColors.high, fontWeight: 700 }}>
               HIGH
             </Box>
           </Typography>
@@ -428,7 +463,7 @@ const QueueItem = ({ finding, isCurrent, isSelected, onToggleSelect, onOpenFindi
       onClick={() => onOpenFinding(finding.id)}
       sx={{
         display: 'grid',
-        gridTemplateColumns: '24px 24px 10px 1fr',
+        gridTemplateColumns: '24px 24px 18px 1fr',
         alignItems: 'center',
         gap: 1,
         px: 1.5,
@@ -458,14 +493,32 @@ const QueueItem = ({ finding, isCurrent, isSelected, onToggleSelect, onOpenFindi
 
       <StatusGlyph status={finding.status} isCurrent={isCurrent} />
 
-      <Box
-        sx={{
-          width: 10,
-          height: 10,
-          borderRadius: '50%',
-          bgcolor: severityColors[finding.severity],
-        }}
-      />
+      <Tooltip title={`${finding.severity} severity`} placement="top" arrow>
+        <Box
+          sx={{
+            width: 18,
+            height: 18,
+            borderRadius: '50%',
+            bgcolor: severityColors[finding.severity],
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+          }}
+        >
+          <Typography
+            sx={{
+              fontFamily: monoFontFamily,
+              fontSize: 8,
+              fontWeight: 700,
+              color: '#FFFFFF',
+              lineHeight: 1,
+            }}
+          >
+            {finding.severity[0].toUpperCase()}
+          </Typography>
+        </Box>
+      </Tooltip>
 
       <Box sx={{ minWidth: 0 }}>
         <Typography component="p" style={titleStyles}>

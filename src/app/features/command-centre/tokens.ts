@@ -1,5 +1,14 @@
 import { FindingSeverity, FindingSource, FindingStatus } from './types';
 
+export const statusLabel: Record<FindingStatus, string> = {
+  draft_ai: 'Draft (AI)',
+  draft_human: 'Draft (Manual)',
+  needs_action: 'Needs Action',
+  in_review: 'In Review',
+  complete: 'Complete',
+  irrelevant: 'Irrelevant',
+};
+
 export const severityColors: Record<FindingSeverity, string> = {
   high: '#EF4444',
   medium: '#F97316',
@@ -35,9 +44,9 @@ export const accentColor = '#0052FF';
 export const accentSecondary = '#4D7CFF';
 export const accentGradient = 'linear-gradient(135deg, #0052FF, #4D7CFF)';
 
-export const displayFontFamily = '"Calistoga", Georgia, serif';
-export const uiFontFamily = '"Inter", system-ui, sans-serif';
-export const monoFontFamily = '"JetBrains Mono", monospace';
+export const displayFontFamily = '"Open Sans", system-ui, sans-serif';
+export const uiFontFamily = '"Open Sans", system-ui, sans-serif';
+export const monoFontFamily = '"Open Sans", system-ui, sans-serif';
 
 export const baseFontFamily = uiFontFamily;
 

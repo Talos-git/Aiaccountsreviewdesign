@@ -17,6 +17,8 @@ import {
   Badge,
   Link,
   FormControl,
+  ThemeProvider,
+  createTheme,
 } from '@mui/material';
 import {
   ArrowBack,
@@ -33,6 +35,12 @@ import {
   KeyboardArrowDown,
 } from '@mui/icons-material';
 import { CommandCentreReview } from './features/command-centre/CommandCentreReview';
+
+const theme = createTheme({
+  typography: {
+    fontFamily: '"Open Sans", system-ui, sans-serif',
+  },
+});
 
 // Checklist data
 const checklistItems = [
@@ -284,6 +292,7 @@ export default function App() {
   };
 
   return (
+    <ThemeProvider theme={theme}>
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', bgcolor: 'white' }}>
       {/* Top AppBar */}
       <AppBar position="static" color="default" elevation={0} sx={{ borderBottom: '1px solid #e0e0e0' }}>
@@ -387,5 +396,6 @@ export default function App() {
         {renderTabContent()}
       </Box>
     </Box>
+    </ThemeProvider>
   );
 }
